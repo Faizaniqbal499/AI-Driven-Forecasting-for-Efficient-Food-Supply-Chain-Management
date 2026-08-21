@@ -1,0 +1,1970 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Forecast AI | Data Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #7c3aed;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-light: #f8fafc;
+            --bg-dark: #0f172a;
+            --card-light: #ffffff;
+            --card-dark: #1e293b;
+            --text-light: #1e293b;
+            --text-dark: #f1f5f9;
+            --border-light: #e2e8f0;
+            --border-dark: #334155;
+            --sidebar-light: #ffffff;
+            --sidebar-dark: #0f172a;
+        }
+
+        body {
+            background: var(--bg-light);
+            color: var(--text-light);
+            transition: all 0.3s ease;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+            body.dark-mode {
+                background: var(--bg-dark);
+                color: var(--text-dark);
+            }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--card-light);
+            border: 2px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+            .dark-mode-toggle:hover {
+                transform: scale(1.05);
+                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+            }
+
+            .dark-mode-toggle i {
+                font-size: 20px;
+                color: var(--primary);
+                transition: all 0.3s ease;
+            }
+
+        body.dark-mode .dark-mode-toggle {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+
+            body.dark-mode .dark-mode-toggle i {
+                color: #fbbf24;
+            }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-light);
+            border-right: 1px solid var(--border-light);
+            padding: 30px 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.dark-mode .sidebar {
+            background: var(--sidebar-dark);
+            border-right: 1px solid var(--border-dark);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            color: var(--primary);
+            padding: 0 10px;
+        }
+
+            .logo i {
+                font-size: 26px;
+            }
+
+        .nav-menu {
+            list-style: none;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            margin-bottom: 8px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #64748b;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .nav-link {
+            color: #cbd5e1;
+        }
+
+        .nav-link:hover {
+            background: rgba(79, 70, 229, 0.08);
+            color: var(--primary);
+        }
+
+        body.dark-mode .nav-link:hover {
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .nav-link.active {
+            background: rgba(79, 70, 229, 0.12);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        body.dark-mode .nav-link.active {
+            background: rgba(99, 102, 241, 0.2);
+        }
+
+        .nav-link i {
+            font-size: 18px;
+            width: 24px;
+        }
+
+        .user-profile {
+            padding: 20px 10px;
+            border-top: 1px solid var(--border-light);
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        body.dark-mode .user-profile {
+            border-top: 1px solid var(--border-dark);
+        }
+
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .user-info h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .user-info p {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        body.dark-mode .user-info p {
+            color: #94a3b8;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+            .header h1 {
+                font-size: 32px;
+                font-weight: 700;
+                color: var(--text-light);
+            }
+
+        body.dark-mode .header h1 {
+            color: var(--text-dark);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .restaurant-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .restaurant-dropdown {
+            padding: 12px 20px;
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            background: var(--card-light);
+            color: var(--text-light);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 200px;
+        }
+
+        body.dark-mode .restaurant-dropdown {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+
+        .search-bar {
+            position: relative;
+            width: 300px;
+        }
+
+            .search-bar input {
+                width: 100%;
+                padding: 14px 20px 14px 48px;
+                border: 2px solid var(--border-light);
+                border-radius: 12px;
+                font-size: 15px;
+                background: var(--card-light);
+                color: var(--text-light);
+                transition: all 0.3s;
+            }
+
+        body.dark-mode .search-bar input {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .filter-btn {
+            padding: 12px 20px;
+            background: var(--card-light);
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            color: var(--text-light);
+        }
+
+        body.dark-mode .filter-btn {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary);
+        }
+
+        .upload-btn {
+            padding: 14px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+
+            .upload-btn:hover {
+                background: var(--primary-dark);
+            }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--card-light);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .stat-card {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+            .stat-icon.records {
+                background: rgba(79, 70, 229, 0.1);
+                color: var(--primary);
+            }
+
+            .stat-icon.items {
+                background: rgba(34, 197, 94, 0.1);
+                color: var(--success);
+            }
+
+            .stat-icon.reports {
+                background: rgba(249, 115, 22, 0.1);
+                color: var(--warning);
+            }
+
+            .stat-icon.storage {
+                background: rgba(168, 85, 247, 0.1);
+                color: var(--secondary);
+            }
+
+        .stat-trend {
+            font-size: 14px;
+            font-weight: 500;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .trend-up {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+
+        .trend-down {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-light);
+        }
+
+        body.dark-mode .stat-value {
+            color: var(--text-dark);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        body.dark-mode .stat-label {
+            color: #94a3b8;
+        }
+
+        /* Content Section */
+        .content-section {
+            margin-bottom: 40px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+            .section-header h2 {
+                font-size: 20px;
+                font-weight: 600;
+            }
+
+        .view-all {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+            .view-all:hover {
+                text-decoration: underline;
+            }
+
+        /* Folders Grid */
+        .folders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .folder-card {
+            background: var(--card-light);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        body.dark-mode .folder-card {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+
+        .folder-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode .folder-card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .folder-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 16px;
+        }
+
+            .folder-icon.sales {
+                background: rgba(239, 68, 68, 0.1);
+                color: #ef4444;
+            }
+
+            .folder-icon.inventory {
+                background: rgba(59, 130, 246, 0.1);
+                color: #3b82f6;
+            }
+
+            .folder-icon.customers {
+                background: rgba(34, 197, 94, 0.1);
+                color: #10b981;
+            }
+
+            .folder-icon.reports {
+                background: rgba(249, 115, 22, 0.1);
+                color: #f97316;
+            }
+
+        .folder-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-light);
+        }
+
+        body.dark-mode .folder-name {
+            color: var(--text-dark);
+        }
+
+        .folder-meta {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        body.dark-mode .folder-meta {
+            color: #94a3b8;
+        }
+
+        /* File Table Container */
+        .file-table-container {
+            background: var(--card-light);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        body.dark-mode .file-table-container {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        body.dark-mode .table-header {
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .table-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .action-btn {
+            padding: 10px 16px;
+            background: transparent;
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            color: var(--text-light);
+        }
+
+        body.dark-mode .action-btn {
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+
+        .action-btn:hover {
+            border-color: var(--primary);
+        }
+
+        .action-btn.primary {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+            .action-btn.primary:hover {
+                background: var(--primary-dark);
+            }
+
+        /* File Table */
+        .file-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .file-table th {
+                padding: 18px 24px;
+                text-align: left;
+                font-weight: 600;
+                font-size: 14px;
+                color: #64748b;
+                border-bottom: 1px solid var(--border-light);
+                user-select: none;
+            }
+
+        body.dark-mode .file-table th {
+            color: #94a3b8;
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .file-table td {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-light);
+            transition: background 0.3s;
+        }
+
+        body.dark-mode .file-table td {
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .file-table tbody tr:hover {
+            background: rgba(79, 70, 229, 0.03);
+        }
+
+        body.dark-mode .file-table tbody tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .file-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* File Name Cell */
+        .file-name-cell {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+            .file-icon.csv {
+                background: rgba(34, 197, 94, 0.1);
+                color: #10b981;
+            }
+
+            .file-icon.xlsx {
+                background: rgba(59, 130, 246, 0.1);
+                color: #3b82f6;
+            }
+
+            .file-icon.json {
+                background: rgba(245, 158, 11, 0.1);
+                color: #f59e0b;
+            }
+
+            .file-icon.pdf {
+                background: rgba(239, 68, 68, 0.1);
+                color: #ef4444;
+            }
+
+        .file-info h4 {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-light);
+        }
+
+        body.dark-mode .file-info h4 {
+            color: var(--text-dark);
+        }
+
+        .file-info p {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        body.dark-mode .file-info p {
+            color: #94a3b8;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-processed {
+            background: rgba(34, 197, 94, 0.1);
+            color: #10b981;
+        }
+
+        .status-pending {
+            background: rgba(249, 115, 22, 0.1);
+            color: #f97316;
+        }
+
+        .status-processing {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .status-failed {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        /* File Actions */
+        .file-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--bg-light);
+            border: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: all 0.3s;
+        }
+
+        body.dark-mode .icon-btn {
+            background: var(--bg-dark);
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+
+        .icon-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Bulk Actions Bar */
+        .bulk-actions-bar {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card-light);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+            display: none;
+        }
+
+        body.dark-mode .bulk-actions-bar {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .bulk-actions-bar.active {
+            display: flex;
+        }
+
+        .selected-count {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .bulk-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .page-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--card-light);
+            border: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: all 0.3s;
+        }
+
+        body.dark-mode .page-btn {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+
+        .page-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .page-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .page-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-size: 14px;
+            color: #64748b;
+            margin: 0 16px;
+        }
+
+        body.dark-mode .page-info {
+            color: #94a3b8;
+        }
+
+        /* Flash Messages */
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .flash-message {
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .flash-message.success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .flash-message.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .flash-message .close-flash {
+            margin-left: auto;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+            .flash-message .close-flash:hover {
+                opacity: 1;
+            }
+
+        /* Upload Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+            .modal-overlay.active {
+                display: flex;
+            }
+
+        .upload-modal {
+            background: var(--card-light);
+            border-radius: 16px;
+            padding: 30px;
+            width: 500px;
+            max-width: 90%;
+        }
+
+        body.dark-mode .upload-modal {
+            background: var(--card-dark);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+            .modal-header h3 {
+                font-size: 20px;
+                font-weight: 600;
+            }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--bg-light);
+            border: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-light);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 24px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+            .upload-area:hover {
+                border-color: var(--primary);
+                background: rgba(79, 70, 229, 0.02);
+            }
+
+            .upload-area i {
+                font-size: 48px;
+                color: var(--primary);
+                margin-bottom: 16px;
+            }
+
+            .upload-area p {
+                color: #64748b;
+            }
+
+            .upload-area .file-types {
+                font-size: 12px;
+                margin-top: 8px;
+            }
+
+        #fileInput {
+            display: none;
+        }
+
+        .upload-progress {
+            display: none;
+            margin-bottom: 24px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--border-light);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+        body.dark-mode .empty-state {
+            color: #94a3b8;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Loading spinner */
+        .fa-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Bulk Actions Bar -->
+    <div class="bulk-actions-bar" id="bulkActionsBar">
+        <div class="selected-count" id="selectedCount">0 files selected</div>
+        <div class="bulk-buttons">
+            <button class="action-btn" onclick="processSelected()">
+                <i class="fas fa-cogs"></i> Process
+            </button>
+            <button class="action-btn" onclick="downloadSelected()">
+                <i class="fas fa-download"></i> Download
+            </button>
+            <button class="action-btn" onclick="deleteSelected()">
+                <i class="fas fa-trash"></i> Delete
+            </button>
+            <button class="action-btn" onclick="clearSelection()">
+                <i class="fas fa-times"></i> Clear
+            </button>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal-overlay" id="uploadModal">
+        <div class="upload-modal">
+            <div class="modal-header">
+                <h3>Upload Data File</h3>
+                <button class="modal-close" onclick="closeUploadModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Click to select or drag and drop</p>
+                    <p class="file-types">CSV, Excel, JSON, PDF (Max 100MB)</p>
+                </div>
+                <input type="file" id="fileInput" name="file" accept=".csv,.xlsx,.xls,.json,.pdf" style="display: none;">
+
+                <div id="selectedFileInfo" style="display: none; margin-bottom: 24px;">
+                    <strong>Selected:</strong> <span id="selectedFileName"></span>
+                    (<span id="selectedFileSize"></span>)
+                </div>
+
+                <div class="upload-progress" id="uploadProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p style="text-align: center; margin-top: 8px;" id="progressText">Uploading...</p>
+                </div>
+
+                <div style="display: flex; gap: 12px;">
+                    <button type="submit" class="upload-btn" style="flex: 1;" id="uploadSubmitBtn">
+                        <i class="fas fa-upload"></i> Upload File
+                    </button>
+                    <button type="button" class="action-btn" onclick="closeUploadModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dark Mode Toggle -->
+    <div class="dark-mode-toggle" id="darkModeToggle">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-utensils"></i>
+                <span>Food Forecast AI</span>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ url_for('dashboard') }}" class="nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('data_management') }}" class="nav-link active">
+                        <i class="fas fa-database"></i>
+                        <span>Data Management</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('menu_items') }}" class="nav-link">
+                        <i class="fas fa-utensils"></i>
+                        <span>Menu Items</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('customer_analytics') }}" class="nav-link">
+                        <i class="fas fa-users"></i>
+                        <span>Customer Analytics</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('ml_models') }}" class="nav-link">
+                        <i class="fas fa-robot"></i>
+                        <span>Forecasting</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('inventory') }}" class="nav-link">
+                        <i class="fas fa-box"></i>
+                        <span>Inventory</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('waste_management') }}" class="nav-link">
+                        <i class="fas fa-recycle"></i>
+                        <span>Waste Management</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('reports') }}" class="nav-link">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Reports</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('settings') }}" class="nav-link">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item" style="margin-top: 20px; border-top: 1px solid var(--border-light); padding-top: 12px;">
+                    <a href="{{ url_for('logout') }}" class="nav-link" style="color: #ef4444;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="user-profile">
+                <div class="user-avatar">{{ user.initials if user else 'RM' }}</div>
+                <div class="user-info">
+                    <h4>{{ user.first_name if user else 'Restaurant' }} {{ user.last_name if user else 'Manager' }}</h4>
+                    <p>{{ user.plan|capitalize if user else 'Premium' }} Account</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                <div class="flash-message {{ category }}">
+                    {% if category == 'success' %}
+                    <i class="fas fa-check-circle"></i>
+                    {% elif category == 'error' %}
+                    <i class="fas fa-exclamation-circle"></i>
+                    {% else %}
+                    <i class="fas fa-info-circle"></i>
+                    {% endif %}
+                    <span>{{ message }}</span>
+                    <span class="close-flash" onclick="this.parentElement.style.display='none'">
+                        <i class="fas fa-times"></i>
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <!-- Header -->
+            <div class="header">
+                <h1>Data Management</h1>
+                <div class="header-actions">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search files..." id="searchInput" value="{{ search_query if search_query else '' }}">
+                    </div>
+
+                    <div class="restaurant-selector">
+                        <select class="restaurant-dropdown" id="restaurantSelect">
+                            <option value="{{ user.restaurant_name if user else 'Main Restaurant' }}" selected>
+                                {{ user.restaurant_name if user else 'Main Restaurant' }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <button class="filter-btn" id="filterBtn" onclick="toggleFilterMenu()">
+                        <i class="fas fa-filter"></i>
+                        Filter
+                    </button>
+                    <button class="upload-btn" id="uploadBtn" onclick="openUploadModal()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        Upload Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon records">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <span class="stat-trend {{ 'trend-up' if stats.records_trend > 0 else 'trend-down' }}">
+                            {{ '+' if stats.records_trend > 0 else '' }}{{ stats.records_trend }}%
+                        </span>
+                    </div>
+                    <div class="stat-value">{{ stats.sales_records }}</div>
+                    <div class="stat-label">Sales Records</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon items">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <span class="stat-trend {{ 'trend-up' if stats.items_trend > 0 else 'trend-down' }}">
+                            {{ '+' if stats.items_trend > 0 else '' }}{{ stats.items_trend }}%
+                        </span>
+                    </div>
+                    <div class="stat-value">{{ stats.menu_items }}</div>
+                    <div class="stat-label">Menu Items</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon reports">
+                            <i class="fas fa-recycle"></i>
+                        </div>
+                        <span class="stat-trend {{ 'trend-down' if stats.waste_trend < 0 else 'trend-up' }}">
+                            {{ '+' if stats.waste_trend > 0 else '' }}{{ stats.waste_trend }}%
+                        </span>
+                    </div>
+                    <div class="stat-value">{{ stats.waste_reports }}</div>
+                    <div class="stat-label">Waste Reports</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon storage">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <span class="stat-trend trend-up">+{{ stats.storage_trend }}%</span>
+                    </div>
+                    <div class="stat-value">{{ stats.total_storage }}</div>
+                    <div class="stat-label">Total Storage</div>
+                </div>
+            </div>
+
+            <!-- Folders Section -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2>Data Folders</h2>
+                    <a href="#" class="view-all" onclick="viewAllFolders()">
+                        View All Folders
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="folders-grid">
+                    {% for folder in folders %}
+                    <div class="folder-card" onclick="openFolder('{{ folder.name }}', {{ folder.id }})">
+                        <div class="folder-icon {{ folder.icon_class }}">
+                            <i class="fas fa-{{ folder.icon }}"></i>
+                        </div>
+                        <div class="folder-name">{{ folder.name }}</div>
+                        <div class="folder-meta">{{ folder.file_count }} files • {{ folder.size }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Files Table -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2>Recent Files</h2>
+                    <div class="table-actions">
+                        <button class="action-btn" onclick="selectAllFiles()">
+                            <i class="fas fa-check-square"></i> Select All
+                        </button>
+                        <button class="action-btn primary" onclick="refreshFiles()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="file-table-container">
+                    <table class="file-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;">
+                                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
+                                </th>
+                                <th style="width: 45%;">Name</th>
+                                <th>Type</th>
+                                <th>Size</th>
+                                <th>Status</th>
+                                <th>Upload Date</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="filesTableBody">
+                            {% if files %}
+                            {% for file in files %}
+                            <tr data-file-id="{{ file.id }}">
+                                <td>
+                                    <input type="checkbox" class="file-checkbox" value="{{ file.id }}" onchange="updateSelection()">
+                                </td>
+                                <td>
+                                    <div class="file-name-cell">
+                                        <div class="file-icon {{ file.icon_class }}">
+                                            <i class="fas fa-{{ file.icon }}"></i>
+                                        </div>
+                                        <div class="file-info">
+                                            <h4>{{ file.display_name if file.display_name else file.filename }}</h4>
+                                            <p>{{ file.description }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ file.file_type }}</td>
+                                <td>{{ file.file_size }}</td>
+                                <td><span class="status-badge status-{{ file.status }}">{{ file.status_text }}</span></td>
+                                <td>{{ file.upload_date }}</td>
+                                <td>
+                                    <div class="file-actions">
+                                        <button class="icon-btn" title="Preview" onclick="previewFile({{ file.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="icon-btn" title="Download" onclick="downloadFile({{ file.id }})">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button class="icon-btn" title="Process" onclick="processFile({{ file.id }})">
+                                            <i class="fas fa-cogs"></i>
+                                        </button>
+                                        <button class="icon-btn" title="Delete" onclick="deleteFile({{ file.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="7">
+                                    <div class="empty-state">
+                                        <i class="fas fa-file-alt"></i>
+                                        <p>No files uploaded yet</p>
+                                        <button class="upload-btn" style="margin-top: 16px;" onclick="openUploadModal()">
+                                            <i class="fas fa-cloud-upload-alt"></i> Upload Your First File
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if pagination and pagination.total_pages > 1 %}
+            <div class="pagination">
+                <button class="page-btn {{ 'disabled' if pagination.current_page == 1 else '' }}"
+                        onclick="goToPage({{ pagination.current_page - 1 }})"
+                        {{ 'disabled' if pagination.current_page == 1 else '' }}>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+
+                {% for p in pagination.page_range %}
+                {% if p == '...' %}
+                <span class="page-info">...</span>
+                {% else %}
+                <button class="page-btn {{ 'active' if p == pagination.current_page else '' }}"
+                        onclick="goToPage({{ p }})">
+                    {{ p }}
+                </button>
+                {% endif %}
+                {% endfor %}
+
+                <span class="page-info">of {{ pagination.total_pages }} pages</span>
+
+                <button class="page-btn {{ 'disabled' if pagination.current_page == pagination.total_pages else '' }}"
+                        onclick="goToPage({{ pagination.current_page + 1 }})"
+                        {{ 'disabled' if pagination.current_page == pagination.total_pages else '' }}>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+
+    <script>
+        // ============================================
+        // BACKEND DATA INJECTION
+        // ============================================
+
+        const currentUser = {{ user | tojson | safe if user else 'null' }};
+        const csrfToken = '{{ csrf_token() if csrf_token else "" }}';
+
+        // Selected files tracking
+        let selectedFiles = new Set();
+
+        // ============================================
+        // DARK MODE TOGGLE
+        // ============================================
+
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const darkModeIcon = darkModeToggle.querySelector('i');
+
+        darkModeToggle.addEventListener('click', function () {
+            document.body.classList.toggle('dark-mode');
+
+            if (document.body.classList.contains('dark-mode')) {
+                darkModeIcon.classList.remove('fa-moon');
+                darkModeIcon.classList.add('fa-sun');
+            } else {
+                darkModeIcon.classList.remove('fa-sun');
+                darkModeIcon.classList.add('fa-moon');
+            }
+
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+
+            fetch('/set-theme', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ theme: isDarkMode ? 'dark' : 'light' })
+            }).catch(() => {});
+        });
+
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            darkModeIcon.classList.remove('fa-moon');
+            darkModeIcon.classList.add('fa-sun');
+        }
+
+        // ============================================
+        // UPLOAD MODAL
+        // ============================================
+
+        function openUploadModal() {
+            document.getElementById('uploadModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+            document.getElementById('uploadForm').reset();
+            document.getElementById('selectedFileInfo').style.display = 'none';
+            document.getElementById('uploadProgress').style.display = 'none';
+        }
+
+        // File input handling
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('selectedFileName').textContent = file.name;
+                document.getElementById('selectedFileSize').textContent = formatFileSize(file.size);
+                document.getElementById('selectedFileInfo').style.display = 'block';
+            }
+        });
+
+        // Drag and drop
+        const uploadArea = document.querySelector('.upload-area');
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'var(--primary)';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = 'var(--border-light)';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'var(--border-light)';
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                document.getElementById('fileInput').files = e.dataTransfer.files;
+                document.getElementById('selectedFileName').textContent = file.name;
+                document.getElementById('selectedFileSize').textContent = formatFileSize(file.size);
+                document.getElementById('selectedFileInfo').style.display = 'block';
+            }
+        });
+
+        // Upload form submission
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files[0]) {
+                alert('Please select a file');
+                return;
+            }
+
+            const formData = new FormData(this);
+            const submitBtn = document.getElementById('uploadSubmitBtn');
+            const progressDiv = document.getElementById('uploadProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            progressDiv.style.display = 'block';
+
+            fetch('/upload-file', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    progressFill.style.width = '100%';
+                    progressText.textContent = 'Upload complete!';
+
+                    setTimeout(() => {
+                        closeUploadModal();
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    alert('Upload failed: ' + data.error);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload File';
+                    progressDiv.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Upload failed. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload File';
+                progressDiv.style.display = 'none';
+            });
+        });
+
+        // ============================================
+        // FILE SELECTION
+        // ============================================
+
+        function updateSelection() {
+            selectedFiles.clear();
+            document.querySelectorAll('.file-checkbox:checked').forEach(cb => {
+                selectedFiles.add(parseInt(cb.value));
+            });
+            updateBulkActionsBar();
+        }
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAllCheckbox');
+            const checkboxes = document.querySelectorAll('.file-checkbox');
+
+            checkboxes.forEach(cb => {
+                cb.checked = selectAll.checked;
+                if (selectAll.checked) {
+                    selectedFiles.add(parseInt(cb.value));
+                } else {
+                    selectedFiles.delete(parseInt(cb.value));
+                }
+            });
+
+            updateBulkActionsBar();
+        }
+
+        function selectAllFiles() {
+            const checkboxes = document.querySelectorAll('.file-checkbox');
+            const selectAll = document.getElementById('selectAllCheckbox');
+
+            if (selectedFiles.size === checkboxes.length) {
+                checkboxes.forEach(cb => cb.checked = false);
+                selectedFiles.clear();
+                selectAll.checked = false;
+            } else {
+                checkboxes.forEach(cb => {
+                    cb.checked = true;
+                    selectedFiles.add(parseInt(cb.value));
+                });
+                selectAll.checked = true;
+            }
+
+            updateBulkActionsBar();
+        }
+
+        function clearSelection() {
+            document.querySelectorAll('.file-checkbox').forEach(cb => cb.checked = false);
+            document.getElementById('selectAllCheckbox').checked = false;
+            selectedFiles.clear();
+            updateBulkActionsBar();
+        }
+
+        function updateBulkActionsBar() {
+            const bar = document.getElementById('bulkActionsBar');
+            const countSpan = document.getElementById('selectedCount');
+
+            countSpan.textContent = `${selectedFiles.size} file${selectedFiles.size !== 1 ? 's' : ''} selected`;
+
+            if (selectedFiles.size > 0) {
+                bar.classList.add('active');
+            } else {
+                bar.classList.remove('active');
+            }
+        }
+
+        // ============================================
+        // FILE ACTIONS - FIXED (hardcoded URLs)
+        // ============================================
+
+        function previewFile(fileId) {
+            window.open('/preview-file/' + fileId, '_blank');
+        }
+
+        function downloadFile(fileId) {
+            window.location.href = '/download-file/' + fileId;
+        }
+
+        function processFile(fileId) {
+            fetch('/process-file/' + fileId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert('Processing failed: ' + data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function deleteFile(fileId) {
+            if (!confirm('Are you sure you want to delete this file?')) return;
+
+            fetch('/delete-file/' + fileId, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.querySelector(`tr[data-file-id="${fileId}"]`).remove();
+                    selectedFiles.delete(fileId);
+                    updateBulkActionsBar();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // ============================================
+        // BULK ACTIONS
+        // ============================================
+
+        function processSelected() {
+            if (selectedFiles.size === 0) {
+                alert('Please select files to process');
+                return;
+            }
+
+            fetch('/bulk-process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ file_ids: Array.from(selectedFiles) })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect;
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function downloadSelected() {
+            if (selectedFiles.size === 0) {
+                alert('Please select files to download');
+                return;
+            }
+
+            const fileIds = Array.from(selectedFiles).join(',');
+            window.location.href = '/bulk-download?file_ids=' + fileIds;
+        }
+
+        function deleteSelected() {
+            if (selectedFiles.size === 0) {
+                alert('Please select files to delete');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete ${selectedFiles.size} file(s)?`)) return;
+
+            fetch('/bulk-delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ file_ids: Array.from(selectedFiles) })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // ============================================
+        // FOLDER ACTIONS
+        // ============================================
+
+        function openFolder(folderName, folderId) {
+            window.location.href = '/data-management?folder=' + folderId;
+        }
+
+        function viewAllFolders() {
+            window.location.href = '/data-management?view=folders';
+        }
+
+        // ============================================
+        // PAGINATION & SEARCH
+        // ============================================
+
+        function goToPage(page) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('page', page);
+            window.location.href = url.toString();
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const url = new URL(window.location.href);
+                url.searchParams.set('search', this.value);
+                url.searchParams.set('page', 1);
+                window.location.href = url.toString();
+            }
+        });
+
+        function refreshFiles() {
+            window.location.reload();
+        }
+
+        function toggleFilterMenu() {
+            alert('Filter options: File Type, Date Range, Status');
+        }
+
+        // ============================================
+        // UTILITIES
+        // ============================================
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // ============================================
+        // INITIALIZE
+        // ============================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-hide flash messages
+            setTimeout(() => {
+                document.querySelectorAll('.flash-message').forEach(msg => {
+                    msg.style.transition = 'opacity 0.5s';
+                    msg.style.opacity = '0';
+                    setTimeout(() => msg.remove(), 500);
+                });
+            }, 5000);
+
+            // Restaurant selector
+            document.getElementById('restaurantSelect').addEventListener('change', function() {
+                fetch('/switch-restaurant', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({ restaurant: this.value })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) window.location.reload();
+                });
+            });
+        });
+
+        // ============================================
+        // SESSION MANAGEMENT - 50 Minutes Inactivity
+        // ============================================
+
+        let inactivityTimer;
+        let isActive = true;
+        let lastKeepAlive = 0;
+        const SESSION_TIMEOUT = 50 * 60 * 1000; // 50 minutes
+        const KEEP_ALIVE_INTERVAL = 30000; // Only send keep-alive every 30 seconds max
+
+        // Function to reset inactivity timer
+        function resetInactivityTimer() {
+            if (inactivityTimer) {
+                clearTimeout(inactivityTimer);
+            }
+            inactivityTimer = setTimeout(logoutDueToInactivity, SESSION_TIMEOUT);
+        }
+
+        // Function to handle session timeout
+        function logoutDueToInactivity() {
+            if (!isActive) return;
+
+            fetch('/session-timeout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken || '{{ csrf_token() if csrf_token else "" }}'
+                }
+            })
+                .then(() => {
+                    isActive = false;
+                    alert('Your session has expired due to 50 minutes of inactivity. Please login again.');
+                    window.location.href = '{{ url_for("login") }}';
+                })
+                .catch(() => {
+                    window.location.href = '{{ url_for("login") }}';
+                });
+        }
+
+        // Function to keep session alive (throttled to prevent spam)
+        function keepAlive() {
+            const now = Date.now();
+            // Only send keep-alive if it's been more than 30 seconds since last one
+            if (now - lastKeepAlive > KEEP_ALIVE_INTERVAL) {
+                lastKeepAlive = now;
+                fetch('/keep-alive', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken || '{{ csrf_token() if csrf_token else "" }}'
+                    }
+                }).catch(() => { });
+            }
+        }
+
+        // Track user activity to reset timer
+        function handleUserActivity() {
+            resetInactivityTimer();
+            keepAlive();
+        }
+
+        // Set up activity listeners - use a flag to prevent multiple initializations
+        let listenersInitialized = false;
+
+        function initSessionManagement() {
+            if (listenersInitialized) return;
+            listenersInitialized = true;
+
+            // Reset timer on page load
+            resetInactivityTimer();
+
+            // Track user activities
+            document.addEventListener('mousemove', handleUserActivity);
+            document.addEventListener('keypress', handleUserActivity);
+            document.addEventListener('click', handleUserActivity);
+            document.addEventListener('scroll', handleUserActivity);
+            document.addEventListener('touchstart', handleUserActivity);
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initSessionManagement);
+        } else {
+            initSessionManagement();
+        }
+
+        // Handle tab/window close
+        window.addEventListener('beforeunload', function () {
+            if (isActive) {
+                navigator.sendBeacon('/session-timeout', JSON.stringify({
+                    csrf_token: csrfToken || '{{ csrf_token() if csrf_token else "" }}'
+                }));
+            }
+        });
+
+        // Handle page visibility change
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) {
+                resetInactivityTimer();
+                keepAlive();
+            }
+        });
+    </script>
+</body>
+</html>

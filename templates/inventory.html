@@ -1,0 +1,2048 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Forecast AI | Inventory Planning</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #7c3aed;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --bg-light: #f8fafc;
+            --bg-dark: #0f172a;
+            --card-light: #ffffff;
+            --card-dark: #1e293b;
+            --text-light: #1e293b;
+            --text-dark: #f1f5f9;
+            --border-light: #e2e8f0;
+            --border-dark: #334155;
+            --sidebar-light: #ffffff;
+            --sidebar-dark: #0f172a;
+        }
+
+        body {
+            background: var(--bg-light);
+            color: var(--text-light);
+            transition: all 0.3s ease;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+            body.dark-mode {
+                background: var(--bg-dark);
+                color: var(--text-dark);
+            }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--card-light);
+            border: 2px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+            .dark-mode-toggle:hover {
+                transform: scale(1.05);
+                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+            }
+
+            .dark-mode-toggle i {
+                font-size: 20px;
+                color: var(--primary);
+                transition: all 0.3s ease;
+            }
+
+        body.dark-mode .dark-mode-toggle {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+
+            body.dark-mode .dark-mode-toggle i {
+                color: #fbbf24;
+            }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-light);
+            border-right: 1px solid var(--border-light);
+            padding: 30px 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.dark-mode .sidebar {
+            background: var(--sidebar-dark);
+            border-right: 1px solid var(--border-dark);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            color: var(--primary);
+            padding: 0 10px;
+        }
+
+            .logo i {
+                font-size: 26px;
+            }
+
+        .nav-menu {
+            list-style: none;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            margin-bottom: 8px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #64748b;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .nav-link {
+            color: #cbd5e1;
+        }
+
+        .nav-link:hover {
+            background: rgba(79, 70, 229, 0.08);
+            color: var(--primary);
+        }
+
+        body.dark-mode .nav-link:hover {
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .nav-link.active {
+            background: rgba(79, 70, 229, 0.12);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        body.dark-mode .nav-link.active {
+            background: rgba(99, 102, 241, 0.2);
+        }
+
+        .nav-link i {
+            font-size: 18px;
+            width: 24px;
+        }
+
+        .user-profile {
+            padding: 20px 10px;
+            border-top: 1px solid var(--border-light);
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        body.dark-mode .user-profile {
+            border-top: 1px solid var(--border-dark);
+        }
+
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .user-info h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .user-info p {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        body.dark-mode .user-info p {
+            color: #94a3b8;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+            .header h1 {
+                font-size: 32px;
+                font-weight: 700;
+                color: var(--text-light);
+            }
+
+        body.dark-mode .header h1 {
+            color: var(--text-dark);
+        }
+
+        .header p {
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--card-light);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .stat-card {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+            .stat-icon.total {
+                background: rgba(79, 70, 229, 0.1);
+                color: var(--primary);
+            }
+
+            .stat-icon.low {
+                background: rgba(245, 158, 11, 0.1);
+                color: var(--warning);
+            }
+
+            .stat-icon.critical {
+                background: rgba(239, 68, 68, 0.1);
+                color: var(--danger);
+            }
+
+            .stat-icon.value {
+                background: rgba(16, 185, 129, 0.1);
+                color: var(--success);
+            }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-light);
+        }
+
+        body.dark-mode .stat-value {
+            color: var(--text-dark);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        body.dark-mode .stat-label {
+            color: #94a3b8;
+        }
+
+        /* Alerts Section */
+        .alerts-section {
+            margin-bottom: 40px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+            .section-header h2 {
+                font-size: 20px;
+                font-weight: 600;
+            }
+
+        .alerts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .alert-card {
+            background: var(--card-light);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        body.dark-mode .alert-card {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+
+        .alert-card.high-demand {
+            border-left-color: #ef4444;
+        }
+
+        .alert-card.low-demand {
+            border-left-color: #f59e0b;
+        }
+
+        .alert-card.low-inventory {
+            border-left-color: #ef4444;
+        }
+
+        .alert-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+            .alert-header i {
+                font-size: 20px;
+            }
+
+            .alert-header h3 {
+                font-size: 16px;
+                font-weight: 600;
+            }
+
+        .alert-message {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+
+        body.dark-mode .alert-message {
+            color: #94a3b8;
+        }
+
+        .alert-priority {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .priority-high {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .priority-medium {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        /* Suggestions Section */
+        .suggestions-section {
+            margin-bottom: 40px;
+        }
+
+        .suggestions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .suggestion-card {
+            background: var(--card-light);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .suggestion-card {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+
+        .suggestion-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .suggestion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+            .suggestion-header h3 {
+                font-size: 16px;
+                font-weight: 600;
+            }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-critical {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .status-low {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .status-normal {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .trend-up {
+            color: #ef4444;
+        }
+
+        .trend-down {
+            color: #10b981;
+        }
+
+        .trend-stable {
+            color: #64748b;
+        }
+
+        .stock-info {
+            margin-bottom: 16px;
+        }
+
+        .stock-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .stock-label {
+            color: #64748b;
+        }
+
+        .stock-value {
+            font-weight: 500;
+        }
+
+        .suggested-order {
+            background: rgba(79, 70, 229, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            text-align: center;
+        }
+
+            .suggested-order strong {
+                font-size: 18px;
+                color: var(--primary);
+            }
+
+        /* Inventory Table */
+        .inventory-section {
+            margin-bottom: 40px;
+        }
+
+        .inventory-table-container {
+            background: var(--card-light);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        body.dark-mode .inventory-table-container {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .inventory-table th {
+                padding: 16px 20px;
+                text-align: left;
+                font-weight: 600;
+                font-size: 14px;
+                color: #64748b;
+                border-bottom: 1px solid var(--border-light);
+            }
+
+        body.dark-mode .inventory-table th {
+            color: #94a3b8;
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .inventory-table td {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        body.dark-mode .inventory-table td {
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .inventory-table tbody tr:hover {
+            background: rgba(79, 70, 229, 0.03);
+        }
+
+        .stock-level {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .stock-normal {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .stock-low {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .stock-critical {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #64748b;
+        }
+
+            .empty-state i {
+                font-size: 48px;
+                margin-bottom: 16px;
+                opacity: 0.5;
+            }
+
+        /* Flash Messages */
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .flash-message {
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .flash-message.success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .flash-message.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .close-flash {
+            margin-left: auto;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+            .close-flash:hover {
+                opacity: 1;
+            }
+
+        /* Add Inventory Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+            .modal-overlay.active {
+                display: flex;
+            }
+
+        .inventory-modal {
+            background: var(--card-light);
+            border-radius: 20px;
+            padding: 28px;
+            width: 550px;
+            max-width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        body.dark-mode .inventory-modal {
+            background: var(--card-dark);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        body.dark-mode .modal-header {
+            border-bottom-color: var(--border-dark);
+        }
+
+        .modal-header h3 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #ef4444;
+            transition: all 0.3s;
+        }
+
+            .modal-close:hover {
+                background: #ef4444;
+                color: white;
+            }
+
+        .inventory-modal .form-group {
+            margin-bottom: 18px;
+        }
+
+        .inventory-modal label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        body.dark-mode .inventory-modal label {
+            color: var(--text-dark);
+        }
+
+        .inventory-modal input,
+        .inventory-modal select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            font-size: 14px;
+            background: var(--card-light);
+            color: var(--text-light);
+            transition: all 0.3s;
+        }
+
+        body.dark-mode .inventory-modal input,
+        body.dark-mode .inventory-modal select {
+            background: var(--bg-dark);
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+
+        .inventory-modal input:focus,
+        .inventory-modal select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        body.dark-mode .modal-buttons {
+            border-top-color: var(--border-dark);
+        }
+
+        .btn-primary {
+            flex: 1;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+            .btn-primary:hover {
+                background: var(--primary-dark);
+                transform: translateY(-1px);
+            }
+
+        .btn-secondary {
+            padding: 14px 24px;
+            background: transparent;
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: all 0.3s;
+        }
+
+        body.dark-mode .btn-secondary {
+            color: var(--text-dark);
+            border-color: var(--border-dark);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        /* Header Layout Fix */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+            .header h1 {
+                font-size: 32px;
+                font-weight: 700;
+                color: var(--text-light);
+            }
+
+            .header p {
+                color: #64748b;
+                margin-top: 8px;
+            }
+
+        /* Add Inventory Button - Modern Style */
+        .add-inventory-btn {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            white-space: nowrap;
+        }
+
+            .add-inventory-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+            }
+
+            .add-inventory-btn i {
+                font-size: 18px;
+            }
+
+        /* Main content doesn't overlap with dark mode toggle */
+        .main-content {
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+            padding-right: 90px; /* Add space for dark mode toggle */
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .add-inventory-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .main-content {
+                padding: 20px;
+                padding-right: 70px;
+            }
+        }
+
+        .modal-input,
+        .modal-select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            font-size: 14px;
+            background: var(--card-light);
+            color: var(--text-light);
+            transition: all 0.3s;
+        }
+
+        body.dark-mode .modal-input,
+        body.dark-mode .modal-select {
+            background: var(--bg-dark);
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+
+        .modal-input:focus,
+        .modal-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0 4px;
+            font-size: 14px;
+        }
+
+        .edit-btn {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+            .edit-btn:hover {
+                background: #3b82f6;
+                color: white;
+                transform: scale(1.05);
+            }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+            .delete-btn:hover {
+                background: #ef4444;
+                color: white;
+                transform: scale(1.05);
+            }
+
+        /* Edit Modal (reuse existing modal styles) */
+        .edit-modal .inventory-modal {
+            max-width: 550px;
+        }
+
+        /* Validation error styling */
+        input:invalid {
+            border-color: #ef4444;
+        }
+
+        .validation-error {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+            .validation-error.show {
+                display: block;
+            }
+
+        /* Alert Card Icon Styles  */
+        .alert-card.critical_inventory {
+            border-left-color: #ef4444;
+        }
+
+        .alert-card.low_inventory {
+            border-left-color: #f59e0b;
+        }
+
+        .alert-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .critical-icon {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+
+        .warning-icon {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+        }
+
+        .info-icon {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+            .alert-content h3 {
+                font-size: 15px;
+                font-weight: 600;
+                margin: 0 0 4px 0;
+            }
+
+            .alert-content p {
+                font-size: 13px;
+                color: #64748b;
+                margin: 0;
+            }
+
+        body.dark-mode .alert-content p {
+            color: #94a3b8;
+        }
+
+        .alert-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .priority-critical {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Dark Mode Toggle -->
+    <div class="dark-mode-toggle" id="darkModeToggle">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-utensils"></i>
+                <span>Food Forecast AI</span>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ url_for('dashboard') }}" class="nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('data_management') }}" class="nav-link">
+                        <i class="fas fa-database"></i>
+                        <span>Data Management</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('menu_items') }}" class="nav-link">
+                        <i class="fas fa-utensils"></i>
+                        <span>Menu Items</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('customer_analytics') }}" class="nav-link">
+                        <i class="fas fa-users"></i>
+                        <span>Customer Analytics</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('ml_models') }}" class="nav-link">
+                        <i class="fas fa-robot"></i>
+                        <span>Forecasting</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('inventory') }}" class="nav-link active">
+                        <i class="fas fa-box"></i>
+                        <span>Inventory</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('waste_management') }}" class="nav-link">
+                        <i class="fas fa-recycle"></i>
+                        <span>Waste Management</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('reports') }}" class="nav-link">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Reports</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('settings') }}" class="nav-link">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item" style="margin-top: 20px; border-top: 1px solid var(--border-light); padding-top: 12px;">
+                    <a href="{{ url_for('logout') }}" class="nav-link" style="color: #ef4444;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="user-profile">
+                <div class="user-avatar">{{ user.initials if user else 'RM' }}</div>
+                <div class="user-info">
+                    <h4>{{ user.first_name if user else 'Restaurant' }} {{ user.last_name if user else 'Manager' }}</h4>
+                    <p>{{ user.plan|capitalize if user else 'Professional' }} Account</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                <div class="flash-message {{ category }}">
+                    {% if category == 'success' %}
+                    <i class="fas fa-check-circle"></i>
+                    {% elif category == 'error' %}
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {% else %}
+                    <i class="fas fa-info-circle"></i>
+                    {% endif %}
+                    <span>{{ message }}</span>
+                    <span class="close-flash" onclick="this.parentElement.style.display='none'">
+                        <i class="fas fa-times"></i>
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <!-- Header -->
+            <div class="header">
+                <div>
+                    <h1>Inventory Planning</h1>
+                    <p>Manage stock levels and get AI-powered replenishment suggestions</p>
+                </div>
+                <button class="add-inventory-btn" onclick="openAddInventoryModal()">
+                    <i class="fas fa-plus-circle"></i> Add Inventory Item
+                </button>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon total">
+                            <i class="fas fa-boxes"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">{{ inventory_summary.total_items if inventory_summary else 0 }}</div>
+                    <div class="stat-label">Total Inventory Items</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon low">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">{{ inventory_summary.low_stock if inventory_summary else 0 }}</div>
+                    <div class="stat-label">Low Stock Items</div>
+                    <div class="stat-hint" style="font-size: 11px; color: #64748b; margin-top: 5px;">Below reorder point</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon critical">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">{{ inventory_summary.critical_stock if inventory_summary else 0 }}</div>
+                    <div class="stat-label">Critical Stock</div>
+                    <div class="stat-hint" style="font-size: 11px; color: #64748b; margin-top: 5px;">Below minimum stock</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon value">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">${{ "%.0f"|format(inventory_summary.total_value) if inventory_summary else 0 }}</div>
+                    <div class="stat-label">Total Inventory Value</div>
+                </div>
+            </div>
+
+            <!-- Alerts Section -->
+            {% if alerts and alerts|length > 0 %}
+            <div class="alerts-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-bell"></i> Inventory Alerts</h2>
+                </div>
+                <div class="alerts-grid">
+                    {% for alert in alerts %}
+                    <div class="alert-card {{ alert.type }}">
+                        <div class="alert-header">
+                            {% if alert.type == 'critical_inventory' %}
+                            <div class="alert-icon critical-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            {% elif alert.type == 'low_inventory' %}
+                            <div class="alert-icon warning-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            {% else %}
+                            <div class="alert-icon info-icon">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            {% endif %}
+                            <div class="alert-content">
+                                <h3>{{ alert.title }}</h3>
+                                <p>{{ alert.message }}</p>
+                            </div>
+                            <span class="alert-badge priority-{{ alert.priority }}">{{ alert.priority|upper }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Current Inventory Table -->
+            <div class="inventory-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-list"></i> Current Inventory</h2>
+                </div>
+
+                <div class="inventory-table-container">
+                    {% if inventory_items and inventory_items|length > 0 %}
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Category</th>
+                                <th>Current Stock</th>
+                                <th>Unit</th>
+                                <th>Unit Price</th>
+                                <th>Reorder Point</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in inventory_items %}
+                            <tr id="row-{{ item.id }}">
+                                <td><strong>{{ item.product_name }}</strong></td>
+                                <td>{{ item.category|capitalize if item.category else '-' }}</td>
+                                <td class="stock-value-{{ item.id }}">{{ item.current_stock }}</td>
+                                <td>{{ item.unit }}</td>
+                                <td>${{ "%.2f"|format(item.unit_price) if item.unit_price else '-' }}</td>
+                                <td>{{ item.reorder_point }}</td>
+                                <td>
+                                    <span class="stock-level stock-{{ item.stock_status }}">
+                                        {% if item.stock_status == 'critical' %}Critical
+                                        {% elif item.stock_status == 'low' %}Low
+                                        {% else %}Normal
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="action-btn edit-btn" onclick="openEditModal({{ item.id }})" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="action-btn delete-btn" onclick="deleteInventoryItem({{ item.id }}, '{{ item.product_name }}')" title="Delete">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-box"></i>
+                        <p>No inventory items found.</p>
+                        <p style="font-size: 13px; margin-top: 8px;">Upload sales data to automatically generate inventory suggestions.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Dark Mode Toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const darkModeIcon = darkModeToggle.querySelector('i');
+
+        darkModeToggle.addEventListener('click', function () {
+            document.body.classList.toggle('dark-mode');
+
+            if (document.body.classList.contains('dark-mode')) {
+                darkModeIcon.classList.remove('fa-moon');
+                darkModeIcon.classList.add('fa-sun');
+            } else {
+                darkModeIcon.classList.remove('fa-sun');
+                darkModeIcon.classList.add('fa-moon');
+            }
+
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+
+            fetch('/set-theme', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ theme: isDarkMode ? 'dark' : 'light' })
+            }).catch(() => {});
+        });
+
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            darkModeIcon.classList.remove('fa-moon');
+            darkModeIcon.classList.add('fa-sun');
+        }
+
+        // Auto-hide flash messages
+        setTimeout(() => {
+            document.querySelectorAll('.flash-message').forEach(msg => {
+                msg.style.transition = 'opacity 0.5s';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 500);
+            });
+        }, 5000);
+
+        // ============================================
+        // SIMPLE INVENTORY ADD - DIRECT APPROACH
+        // ============================================
+
+        function openAddInventoryModal() {
+            document.getElementById('addInventoryModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAddInventoryModal() {
+            document.getElementById('addInventoryModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+            document.getElementById('product_name').value = '';
+            document.getElementById('current_stock').value = '';
+            document.getElementById('unit_price').value = '';
+            document.getElementById('supplier').value = '';
+        }
+
+        // Use window.onload or DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function () {
+            const submitBtn = document.getElementById('submitInventoryBtn');
+
+            if (submitBtn) {
+                // Remove any existing listeners
+                const newBtn = submitBtn.cloneNode(true);
+                submitBtn.parentNode.replaceChild(newBtn, submitBtn);
+
+                // Add new click listener
+                newBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    console.log('Button clicked!');  // Debug line
+
+                    // Get values
+                    const product_name = document.getElementById('product_name').value.trim();
+                    const current_stock = document.getElementById('current_stock').value;
+                    const csrfToken = document.getElementById('modal_csrf_token').value;
+
+                    if (!product_name) {
+                        alert('Please enter product name');
+                        return;
+                    }
+
+                    if (!current_stock) {
+                        alert('Please enter current stock');
+                        return;
+                    }
+
+                    // Build URL with query params (simple GET approach)
+                    const params = new URLSearchParams();
+                    params.append('csrf_token', csrfToken);
+                    params.append('product_name', product_name);
+                    params.append('category', document.getElementById('category').value);
+                    params.append('unit', document.getElementById('unit').value);
+                    params.append('current_stock', current_stock);
+                    params.append('unit_price', document.getElementById('unit_price').value || '');
+                    params.append('reorder_point', document.getElementById('reorder_point').value);
+                    params.append('minimum_stock', document.getElementById('minimum_stock').value);
+                    params.append('supplier', document.getElementById('supplier').value);
+                    params.append('storage_location', document.getElementById('storage_location').value);
+
+                    // Redirect to add-inventory-item with GET params
+                    window.location.href = '/add-inventory-item?' + params.toString();
+                });
+            }
+        });
+
+        // ============================================
+        // EDIT INVENTORY ITEM FUNCTIONS (FIXED)
+        // ============================================
+
+        let currentEditId = null;
+
+        function openEditModal(itemId) {
+            // Fetch item data from server
+            fetch(`/get-inventory-item/${itemId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        currentEditId = itemId;
+                        document.getElementById('edit_item_id').value = itemId;
+                        document.getElementById('edit_product_name').value = data.item.product_name;
+                        document.getElementById('edit_category').value = data.item.category || 'other';
+                        document.getElementById('edit_unit').value = data.item.unit || 'kg';
+                        document.getElementById('edit_current_stock').value = data.item.current_stock;
+                        document.getElementById('edit_unit_price').value = data.item.unit_price || '';
+                        document.getElementById('edit_reorder_point').value = data.item.reorder_point;
+                        document.getElementById('edit_minimum_stock').value = data.item.minimum_stock;
+                        document.getElementById('edit_supplier').value = data.item.supplier || '';
+                        document.getElementById('edit_storage_location').value = data.item.storage_location || 'shelf';
+
+                        document.getElementById('editInventoryModal').classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        alert('Error loading item data: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to load item data');
+                });
+        }
+
+        function closeEditModal() {
+            document.getElementById('editInventoryModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+            currentEditId = null;
+        }
+
+        // Validate input values (no negatives)
+        function validateStockValues(stock, price, reorder, minimum) {
+            let isValid = true;
+
+            // Clear all errors first
+            document.getElementById('stock_error').classList.remove('show');
+            document.getElementById('price_error').classList.remove('show');
+            document.getElementById('reorder_error').classList.remove('show');
+            document.getElementById('minimum_error').classList.remove('show');
+
+            if (stock < 0) {
+                document.getElementById('stock_error').classList.add('show');
+                isValid = false;
+            }
+
+            if (price < 0) {
+                document.getElementById('price_error').classList.add('show');
+                isValid = false;
+            }
+
+            if (reorder < 0) {
+                document.getElementById('reorder_error').classList.add('show');
+                isValid = false;
+            }
+
+            if (minimum < 0) {
+                document.getElementById('minimum_error').classList.add('show');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Update inventory item - FIXED VERSION
+        document.addEventListener('DOMContentLoaded', function () {
+            const updateBtn = document.getElementById('updateInventoryBtn');
+
+            if (updateBtn) {
+                // Remove any existing listeners
+                const newUpdateBtn = updateBtn.cloneNode(true);
+                updateBtn.parentNode.replaceChild(newUpdateBtn, updateBtn);
+
+                newUpdateBtn.addEventListener('click', function () {
+                    const itemId = document.getElementById('edit_item_id').value;
+                    const stock = parseFloat(document.getElementById('edit_current_stock').value);
+                    const price = parseFloat(document.getElementById('edit_unit_price').value) || 0;
+                    const reorder = parseFloat(document.getElementById('edit_reorder_point').value);
+                    const minimum = parseFloat(document.getElementById('edit_minimum_stock').value);
+
+                    // Validate no negative values
+                    if (!validateStockValues(stock, price, reorder, minimum)) {
+                        return;
+                    }
+
+                    const csrfToken = document.getElementById('edit_csrf_token').value;
+
+                    const params = new URLSearchParams();
+                    params.append('csrf_token', csrfToken);
+                    params.append('item_id', itemId);
+                    params.append('product_name', document.getElementById('edit_product_name').value);
+                    params.append('category', document.getElementById('edit_category').value);
+                    params.append('unit', document.getElementById('edit_unit').value);
+                    params.append('current_stock', stock);
+                    params.append('unit_price', price);
+                    params.append('reorder_point', reorder);
+                    params.append('minimum_stock', minimum);
+                    params.append('supplier', document.getElementById('edit_supplier').value);
+                    params.append('storage_location', document.getElementById('edit_storage_location').value);
+
+                    // Disable button while updating
+                    const btn = this;
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+                    btn.disabled = true;
+
+                    // Send update request
+                    fetch('/update-inventory-item?' + params.toString(), {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Show success message
+                                showFlashMessage('success', data.message || 'Item updated successfully');
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 1000);
+                            } else {
+                                alert('Error: ' + data.error);
+                                btn.innerHTML = originalText;
+                                btn.disabled = false;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Failed to update item: ' + error);
+                            btn.innerHTML = originalText;
+                            btn.disabled = false;
+                        });
+                });
+            }
+        });
+
+        // ============================================
+        // DELETE INVENTORY ITEM FUNCTION (FIXED)
+        // ============================================
+
+        function deleteInventoryItem(itemId, itemName) {
+            if (confirm(`Are you sure you want to delete "${itemName}"? This action cannot be undone.`)) {
+                const csrfToken = document.getElementById('modal_csrf_token').value;
+
+                // Show loading state on the delete button
+                const deleteBtn = event.target.closest('.delete-btn');
+                if (deleteBtn) {
+                    const originalIcon = deleteBtn.innerHTML;
+                    deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    deleteBtn.disabled = true;
+                }
+
+                fetch(`/delete-inventory-item/${itemId}?csrf_token=${csrfToken}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message
+                            showFlashMessage('success', data.message || 'Item deleted successfully');
+                            // Remove row from table with animation
+                            const row = document.getElementById(`row-${itemId}`);
+                            if (row) {
+                                row.style.transition = 'opacity 0.3s';
+                                row.style.opacity = '0';
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 500);
+                            } else {
+                                location.reload();
+                            }
+                        } else {
+                            alert('Error: ' + data.error);
+                            if (deleteBtn) {
+                                deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                                deleteBtn.disabled = false;
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Failed to delete item: ' + error);
+                        if (deleteBtn) {
+                            deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                            deleteBtn.disabled = false;
+                        }
+                    });
+            }
+        }
+
+        // Helper function to show flash messages dynamically
+        function showFlashMessage(category, message) {
+            // Check if flash messages container exists
+            let flashContainer = document.querySelector('.flash-messages');
+            if (!flashContainer) {
+                flashContainer = document.createElement('div');
+                flashContainer.className = 'flash-messages';
+                const mainContent = document.querySelector('.main-content');
+                if (mainContent) {
+                    mainContent.insertBefore(flashContainer, mainContent.firstChild);
+                }
+            }
+
+            const flashDiv = document.createElement('div');
+            flashDiv.className = `flash-message ${category}`;
+            flashDiv.innerHTML = `
+        <i class="fas fa-${category === 'success' ? 'check-circle' : 'info-circle'}"></i>
+        <span>${message}</span>
+        <span class="close-flash" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </span>
+    `;
+
+            flashContainer.appendChild(flashDiv);
+
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (flashDiv.parentElement) {
+                    flashDiv.style.transition = 'opacity 0.5s';
+                    flashDiv.style.opacity = '0';
+                    setTimeout(() => {
+                        if (flashDiv.parentElement) flashDiv.remove();
+                    }, 500);
+                }
+            }, 3000);
+        }
+
+        // ============================================
+        // VALIDATION FOR ADD INVENTORY FORM
+        // ============================================
+
+        // Add validation to existing add inventory function
+        function validateAddForm() {
+            const stock = parseFloat(document.getElementById('current_stock').value);
+            const price = parseFloat(document.getElementById('unit_price').value) || 0;
+            const reorder = parseFloat(document.getElementById('reorder_point').value);
+            const minimum = parseFloat(document.getElementById('minimum_stock').value);
+
+            let isValid = true;
+
+            if (stock < 0) {
+                alert('Current stock cannot be negative');
+                isValid = false;
+            }
+            if (price < 0) {
+                alert('Unit price cannot be negative');
+                isValid = false;
+            }
+            if (reorder < 0) {
+                alert('Reorder point cannot be negative');
+                isValid = false;
+            }
+            if (minimum < 0) {
+                alert('Minimum stock cannot be negative');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Override the existing submit button to include validation
+        document.addEventListener('DOMContentLoaded', function () {
+            const submitBtn = document.getElementById('submitInventoryBtn');
+
+            if (submitBtn) {
+                const newBtn = submitBtn.cloneNode(true);
+                submitBtn.parentNode.replaceChild(newBtn, submitBtn);
+
+                newBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // Add validation
+                    if (!validateAddForm()) {
+                        return;
+                    }
+
+                    const product_name = document.getElementById('product_name').value.trim();
+                    const current_stock = document.getElementById('current_stock').value;
+                    const csrfToken = document.getElementById('modal_csrf_token').value;
+
+                    if (!product_name) {
+                        alert('Please enter product name');
+                        return;
+                    }
+
+                    if (!current_stock) {
+                        alert('Please enter current stock');
+                        return;
+                    }
+
+                    const params = new URLSearchParams();
+                    params.append('csrf_token', csrfToken);
+                    params.append('product_name', product_name);
+                    params.append('category', document.getElementById('category').value);
+                    params.append('unit', document.getElementById('unit').value);
+                    params.append('current_stock', current_stock);
+                    params.append('unit_price', document.getElementById('unit_price').value || '');
+                    params.append('reorder_point', document.getElementById('reorder_point').value);
+                    params.append('minimum_stock', document.getElementById('minimum_stock').value);
+                    params.append('supplier', document.getElementById('supplier').value);
+                    params.append('storage_location', document.getElementById('storage_location').value);
+
+                    window.location.href = '/add-inventory-item?' + params.toString();
+                });
+            }
+        });
+
+        // ============================================
+        // SESSION MANAGEMENT - 50 Minutes Inactivity
+        // ============================================
+
+        let inactivityTimer;
+        let isActive = true;
+        let lastKeepAlive = 0;
+        const SESSION_TIMEOUT = 50 * 60 * 1000; // 50 minutes
+        const KEEP_ALIVE_INTERVAL = 30000; // Only send keep-alive every 30 seconds max
+
+        // Function to reset inactivity timer
+        function resetInactivityTimer() {
+            if (inactivityTimer) {
+                clearTimeout(inactivityTimer);
+            }
+            inactivityTimer = setTimeout(logoutDueToInactivity, SESSION_TIMEOUT);
+        }
+
+        // Function to handle session timeout
+        function logoutDueToInactivity() {
+            if (!isActive) return;
+
+            fetch('/session-timeout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken || '{{ csrf_token() if csrf_token else "" }}'
+                }
+            })
+                .then(() => {
+                    isActive = false;
+                    alert('Your session has expired due to 50 minutes of inactivity. Please login again.');
+                    window.location.href = '{{ url_for("login") }}';
+                })
+                .catch(() => {
+                    window.location.href = '{{ url_for("login") }}';
+                });
+        }
+
+        // Function to keep session alive (throttled to prevent spam)
+        function keepAlive() {
+            const now = Date.now();
+            // Only send keep-alive if it's been more than 30 seconds since last one
+            if (now - lastKeepAlive > KEEP_ALIVE_INTERVAL) {
+                lastKeepAlive = now;
+                fetch('/keep-alive', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken || '{{ csrf_token() if csrf_token else "" }}'
+                    }
+                }).catch(() => { });
+            }
+        }
+
+        // Track user activity to reset timer
+        function handleUserActivity() {
+            resetInactivityTimer();
+            keepAlive();
+        }
+
+        // Set up activity listeners - use a flag to prevent multiple initializations
+        let listenersInitialized = false;
+
+        function initSessionManagement() {
+            if (listenersInitialized) return;
+            listenersInitialized = true;
+
+            // Reset timer on page load
+            resetInactivityTimer();
+
+            // Track user activities
+            document.addEventListener('mousemove', handleUserActivity);
+            document.addEventListener('keypress', handleUserActivity);
+            document.addEventListener('click', handleUserActivity);
+            document.addEventListener('scroll', handleUserActivity);
+            document.addEventListener('touchstart', handleUserActivity);
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initSessionManagement);
+        } else {
+            initSessionManagement();
+        }
+
+        // Handle tab/window close
+        window.addEventListener('beforeunload', function () {
+            if (isActive) {
+                navigator.sendBeacon('/session-timeout', JSON.stringify({
+                    csrf_token: csrfToken || '{{ csrf_token() if csrf_token else "" }}'
+                }));
+            }
+        });
+
+        // Handle page visibility change
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) {
+                resetInactivityTimer();
+                keepAlive();
+            }
+        });
+    </script>
+
+    <!-- Add Inventory Item Modal -->
+    <div class="modal-overlay" id="addInventoryModal">
+        <div class="inventory-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-box"></i> Add Inventory Item</h3>
+                <button class="modal-close" onclick="closeAddInventoryModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- NO FORM TAG - Use div instead to prevent any form submission -->
+            <div id="addInventoryForm">
+                <input type="hidden" name="csrf_token" id="modal_csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Product Name *</label>
+                    <input type="text" id="product_name" name="product_name" placeholder="e.g., Fresh Milk, Chicken Breast" class="modal-input" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-folder"></i> Category</label>
+                        <select id="category" name="category" class="modal-select">
+                            <option value="dairy">🥛 Dairy</option>
+                            <option value="meat">🍖 Meat</option>
+                            <option value="vegetables">🥬 Vegetables</option>
+                            <option value="fruits">🍎 Fruits</option>
+                            <option value="grains">🌾 Grains</option>
+                            <option value="beverages">🥤 Beverages</option>
+                            <option value="oils">🫒 Oils & Sauces</option>
+                            <option value="other">📦 Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-weight-hanging"></i> Unit</label>
+                        <select id="unit" name="unit" class="modal-select">
+                            <option value="kg">Kilograms (kg)</option>
+                            <option value="liters">Liters (L)</option>
+                            <option value="units">Units (pcs)</option>
+                            <option value="lb">Pounds (lb)</option>
+                            <option value="grams">Grams (g)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-charging-station"></i> Current Stock *</label>
+                        <input type="number" id="current_stock" name="current_stock" step="0.01" placeholder="0" class="modal-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-dollar-sign"></i> Unit Price ($)</label>
+                        <input type="number" id="unit_price" name="unit_price" step="0.01" placeholder="0.00" class="modal-input">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-flag-checkered"></i> Reorder Point</label>
+                        <input type="number" id="reorder_point" name="reorder_point" step="0.01" value="50" class="modal-input">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-exclamation-triangle"></i> Minimum Stock</label>
+                        <input type="number" id="minimum_stock" name="minimum_stock" step="0.01" value="20" class="modal-input">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-truck"></i> Supplier</label>
+                        <input type="text" id="supplier" name="supplier" placeholder="Supplier name" class="modal-input">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-thermometer-half"></i> Storage Location</label>
+                        <select id="storage_location" name="storage_location" class="modal-select">
+                            <option value="shelf">🏠 Shelf (Room Temp)</option>
+                            <option value="refrigerator">❄️ Refrigerator (Chilled)</option>
+                            <option value="freezer">🧊 Freezer (Frozen)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" class="btn-primary" id="submitInventoryBtn">
+                        <i class="fas fa-save"></i> Add Item
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="closeAddInventoryModal()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Inventory Item Modal -->
+    <div class="modal-overlay" id="editInventoryModal">
+        <div class="inventory-modal edit-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Edit Inventory Item</h3>
+                <button class="modal-close" onclick="closeEditModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div id="editInventoryForm">
+                <input type="hidden" id="edit_item_id">
+                <input type="hidden" name="csrf_token" id="edit_csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Product Name *</label>
+                    <input type="text" id="edit_product_name" class="modal-input" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-folder"></i> Category</label>
+                        <select id="edit_category" class="modal-select">
+                            <option value="dairy">🥛 Dairy</option>
+                            <option value="meat">🍖 Meat</option>
+                            <option value="vegetables">🥬 Vegetables</option>
+                            <option value="fruits">🍎 Fruits</option>
+                            <option value="grains">🌾 Grains</option>
+                            <option value="beverages">🥤 Beverages</option>
+                            <option value="oils">🫒 Oils & Sauces</option>
+                            <option value="other">📦 Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-weight-hanging"></i> Unit</label>
+                        <select id="edit_unit" class="modal-select">
+                            <option value="kg">Kilograms (kg)</option>
+                            <option value="liters">Liters (L)</option>
+                            <option value="units">Units (pcs)</option>
+                            <option value="lb">Pounds (lb)</option>
+                            <option value="grams">Grams (g)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-charging-station"></i> Current Stock *</label>
+                        <input type="number" id="edit_current_stock" step="0.01" class="modal-input" required>
+                        <div class="validation-error" id="stock_error">Stock cannot be negative</div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-dollar-sign"></i> Unit Price ($)</label>
+                        <input type="number" id="edit_unit_price" step="0.01" class="modal-input">
+                        <div class="validation-error" id="price_error">Price cannot be negative</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-flag-checkered"></i> Reorder Point</label>
+                        <input type="number" id="edit_reorder_point" step="0.01" class="modal-input">
+                        <div class="validation-error" id="reorder_error">Reorder point cannot be negative</div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-exclamation-triangle"></i> Minimum Stock</label>
+                        <input type="number" id="edit_minimum_stock" step="0.01" class="modal-input">
+                        <div class="validation-error" id="minimum_error">Minimum stock cannot be negative</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-truck"></i> Supplier</label>
+                        <input type="text" id="edit_supplier" class="modal-input">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-thermometer-half"></i> Storage Location</label>
+                        <select id="edit_storage_location" class="modal-select">
+                            <option value="shelf">🏠 Shelf (Room Temp)</option>
+                            <option value="refrigerator">❄️ Refrigerator (Chilled)</option>
+                            <option value="freezer">🧊 Freezer (Frozen)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" class="btn-primary" id="updateInventoryBtn">
+                        <i class="fas fa-save"></i> Update Item
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="closeEditModal()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

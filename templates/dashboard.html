@@ -1,0 +1,2560 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Forecast AI | Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #7c3aed;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --bg-light: #f8fafc;
+            --bg-dark: #0f172a;
+            --card-light: #ffffff;
+            --card-dark: #1e293b;
+            --text-light: #1e293b;
+            --text-dark: #f1f5f9;
+            --border-light: #e2e8f0;
+            --border-dark: #334155;
+            --sidebar-light: #ffffff;
+            --sidebar-dark: #0f172a;
+        }
+
+        body {
+            background: var(--bg-light);
+            color: var(--text-light);
+            transition: all 0.3s ease;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+            body.dark-mode {
+                background: var(--bg-dark);
+                color: var(--text-dark);
+            }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--card-light);
+            border: 2px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+            .dark-mode-toggle:hover {
+                transform: scale(1.05);
+                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+            }
+
+            .dark-mode-toggle i {
+                font-size: 20px;
+                color: var(--primary);
+                transition: all 0.3s ease;
+            }
+
+        body.dark-mode .dark-mode-toggle {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+
+            body.dark-mode .dark-mode-toggle i {
+                color: #fbbf24;
+            }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-light);
+            border-right: 1px solid var(--border-light);
+            padding: 30px 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.dark-mode .sidebar {
+            background: var(--sidebar-dark);
+            border-right: 1px solid var(--border-dark);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            color: var(--primary);
+            padding: 0 10px;
+        }
+
+            .logo i {
+                font-size: 26px;
+            }
+
+        .nav-menu {
+            list-style: none;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            margin-bottom: 8px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #64748b;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .nav-link {
+            color: #cbd5e1;
+        }
+
+        .nav-link:hover {
+            background: rgba(79, 70, 229, 0.08);
+            color: var(--primary);
+        }
+
+        body.dark-mode .nav-link:hover {
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .nav-link.active {
+            background: rgba(79, 70, 229, 0.12);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        body.dark-mode .nav-link.active {
+            background: rgba(99, 102, 241, 0.2);
+        }
+
+        .nav-link i {
+            font-size: 18px;
+            width: 24px;
+        }
+
+        .user-profile {
+            padding: 20px 10px;
+            border-top: 1px solid var(--border-light);
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        body.dark-mode .user-profile {
+            border-top: 1px solid var(--border-dark);
+        }
+
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .user-info h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .user-info p {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        body.dark-mode .user-info p {
+            color: #94a3b8;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+            .header h1 {
+                font-size: 32px;
+                font-weight: 700;
+                color: var(--text-light);
+            }
+
+        body.dark-mode .header h1 {
+            color: var(--text-dark);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .restaurant-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .restaurant-dropdown {
+            padding: 12px 20px;
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            background: var(--card-light);
+            color: var(--text-light);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 200px;
+        }
+
+        body.dark-mode .restaurant-dropdown {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+
+        .date-range {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .date-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            background: var(--card-light);
+            color: var(--text-light);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        body.dark-mode .date-btn {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+
+        .date-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card {
+            background: var(--card-light);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .stat-card {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+            .stat-icon.customers {
+                background: rgba(79, 70, 229, 0.1);
+                color: var(--primary);
+            }
+
+            .stat-icon.accuracy {
+                background: rgba(34, 197, 94, 0.1);
+                color: var(--success);
+            }
+
+            .stat-icon.waste {
+                background: rgba(249, 115, 22, 0.1);
+                color: var(--warning);
+            }
+
+            .stat-icon.revenue {
+                background: rgba(168, 85, 247, 0.1);
+                color: var(--secondary);
+            }
+
+        .stat-trend {
+            font-size: 14px;
+            font-weight: 500;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .trend-up {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+
+        .trend-down {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-light);
+        }
+
+        body.dark-mode .stat-value {
+            color: var(--text-dark);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        body.dark-mode .stat-label {
+            color: #94a3b8;
+        }
+
+        /* Content Sections */
+        .content-section {
+            margin-bottom: 40px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+            .section-header h2 {
+                font-size: 20px;
+                font-weight: 600;
+            }
+
+        .view-all {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+            .view-all:hover {
+                text-decoration: underline;
+            }
+
+        /* Top Items Grid */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .item-card {
+            background: var(--card-light);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        body.dark-mode .item-card {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+
+        .item-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode .item-card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .item-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 16px;
+        }
+
+        .item-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-light);
+        }
+
+        body.dark-mode .item-name {
+            color: var(--text-dark);
+        }
+
+        .item-meta {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        body.dark-mode .item-meta {
+            color: #94a3b8;
+        }
+
+        /* Alerts List */
+        .alerts-list {
+            background: var(--card-light);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        body.dark-mode .alerts-list {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-light);
+            transition: background 0.3s;
+        }
+
+        body.dark-mode .alert-item {
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .alert-item:hover {
+            background: rgba(79, 70, 229, 0.03);
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            font-size: 18px;
+        }
+
+            .alert-icon.warning {
+                background: rgba(239, 68, 68, 0.1);
+                color: #ef4444;
+            }
+
+            .alert-icon.info {
+                background: rgba(34, 197, 94, 0.1);
+                color: #10b981;
+            }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-light);
+        }
+
+        body.dark-mode .alert-title {
+            color: var(--text-dark);
+        }
+
+        .alert-details {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        body.dark-mode .alert-details {
+            color: #94a3b8;
+        }
+
+        .alert-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-action {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .status-noted {
+            background: rgba(34, 197, 94, 0.1);
+            color: #10b981;
+        }
+
+        /* Forecast Chart Container */
+        .forecast-chart {
+            background: var(--card-light);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        body.dark-mode .forecast-chart {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .chart-title h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        /* Legend Styles */
+        .chart-legend {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 20px;
+            transition: all 0.3s;
+            background: var(--bg-light);
+        }
+
+        body.dark-mode .legend-item {
+            background: var(--bg-dark);
+        }
+
+        .legend-item:hover {
+            opacity: 0.7;
+            transform: scale(0.98);
+        }
+
+        .legend-item.hidden {
+            opacity: 0.5;
+            background: var(--border-light);
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+            .legend-color.actual {
+                background: #10b981;
+            }
+
+            .legend-color.predicted {
+                background: #4f46e5;
+            }
+
+        .legend-text {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        body.dark-mode .legend-text {
+            color: var(--text-dark);
+        }
+
+        /* Chart Canvas */
+        .chart-canvas-container {
+            position: relative;
+            height: 350px;
+            margin-top: 20px;
+        }
+
+        canvas {
+            max-height: 350px;
+            width: 100%;
+        }
+
+        /* Summary Cards */
+        .forecast-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        body.dark-mode .forecast-summary {
+            border-top-color: var(--border-dark);
+        }
+
+        @media (max-width: 768px) {
+            .forecast-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .summary-card {
+            text-align: center;
+            padding: 16px;
+            background: var(--bg-light);
+            border-radius: 12px;
+        }
+
+        body.dark-mode .summary-card {
+            background: var(--bg-dark);
+        }
+
+        .summary-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        body.dark-mode .summary-label {
+            color: #94a3b8;
+        }
+
+        /* Age Distribution */
+        .age-distribution {
+            background: var(--card-light);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        body.dark-mode .age-distribution {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+        }
+
+        .age-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .age-bar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .age-label {
+            width: 60px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .age-progress {
+            flex: 1;
+            height: 24px;
+            background: var(--border-light);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        body.dark-mode .age-progress {
+            background: #334155;
+        }
+
+        .age-fill {
+            height: 100%;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 12px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .action-btn {
+            background: var(--card-light);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-light);
+            transition: all 0.3s;
+        }
+
+        body.dark-mode .action-btn {
+            background: var(--card-dark);
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.1);
+        }
+
+        .action-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 16px;
+        }
+
+        .action-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .action-desc {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        body.dark-mode .action-desc {
+            color: #94a3b8;
+        }
+
+        /* Export Button */
+        .export-btn {
+            padding: 10px 16px;
+            background: transparent;
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            color: var(--text-light);
+        }
+
+        body.dark-mode .export-btn {
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+
+        .export-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Flash Messages */
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .flash-message {
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .flash-message.success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .flash-message.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .flash-message .close-flash {
+            margin-left: auto;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+            .flash-message .close-flash:hover {
+                opacity: 1;
+            }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+        body.dark-mode .empty-state {
+            color: #94a3b8;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Loading Spinner */
+        .fa-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Two Column Layout */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 1024px) {
+            .two-column {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+
+        /* Item Forecast Styles */
+        .item-option:hover {
+            border-color: var(--primary) !important;
+        }
+
+        .item-option.active {
+            border-color: var(--primary) !important;
+            background: rgba(79, 70, 229, 0.1) !important;
+        }
+
+        #itemList::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #itemList::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 2px;
+        }
+
+        body.dark-mode #itemList::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+
+        #forecastDisplay .forecast-chart-container {
+            width: 100%;
+            height: 180px;
+        }
+
+        /* Item Forecast Container Dark Mode Support */
+        #forecastDisplay {
+            transition: all 0.3s ease;
+        }
+
+            #forecastDisplay .summary-card {
+                transition: all 0.3s ease;
+            }
+
+            #forecastDisplay table th,
+            #forecastDisplay table td {
+                transition: all 0.3s ease;
+            }
+
+        /* Dark mode overrides for item forecast */
+        body.dark-mode #forecastDisplay .summary-card {
+            background: var(--bg-dark) !important;
+            border-color: var(--border-dark) !important;
+        }
+
+        body.dark-mode #forecastDisplay table th,
+        body.dark-mode #forecastDisplay table td {
+            color: var(--text-dark) !important;
+        }
+
+        body.dark-mode #forecastDisplay table tr {
+            border-bottom-color: var(--border-dark) !important;
+        }
+
+        /* Item Forecast Dark Mode Support */
+        #forecastDisplay {
+            transition: all 0.3s ease;
+        }
+
+            #forecastDisplay .summary-card {
+                transition: all 0.3s ease;
+                background: var(--bg-light) !important;
+                border: 1px solid var(--border-light) !important;
+            }
+
+        body.dark-mode #forecastDisplay .summary-card {
+            background: var(--bg-dark) !important;
+            border-color: var(--border-dark) !important;
+        }
+
+        #forecastDisplay table th {
+            color: var(--text-light) !important;
+            border-bottom-color: var(--border-light) !important;
+        }
+
+        body.dark-mode #forecastDisplay table th {
+            color: var(--text-dark) !important;
+            border-bottom-color: var(--border-dark) !important;
+        }
+
+        #forecastDisplay table td {
+            color: var(--text-light) !important;
+        }
+
+        body.dark-mode #forecastDisplay table td {
+            color: var(--text-dark) !important;
+        }
+
+        #forecastDisplay table tr {
+            border-bottom-color: var(--border-light) !important;
+        }
+
+        body.dark-mode #forecastDisplay table tr {
+            border-bottom-color: var(--border-dark) !important;
+        }
+
+        #forecastDisplay .item-name {
+            color: var(--text-light) !important;
+        }
+
+        body.dark-mode #forecastDisplay .item-name {
+            color: var(--text-dark) !important;
+        }
+
+        /* Item list dark mode */
+        #itemList .item-option {
+            background: var(--bg-light) !important;
+            border-color: transparent !important;
+        }
+
+        body.dark-mode #itemList .item-option {
+            background: var(--bg-dark) !important;
+            border-color: transparent !important;
+        }
+
+            body.dark-mode #itemList .item-option:hover {
+                border-color: var(--primary) !important;
+                background: rgba(99, 102, 241, 0.15) !important;
+            }
+
+        #itemList .item-option.active {
+            border-color: var(--primary) !important;
+            background: rgba(79, 70, 229, 0.1) !important;
+        }
+
+        body.dark-mode #itemList .item-option.active {
+            background: rgba(99, 102, 241, 0.2) !important;
+        }
+
+        /* Search input dark mode */
+        #itemSearchInput {
+            background: var(--bg-light) !important;
+            color: var(--text-light) !important;
+            border-color: var(--border-light) !important;
+        }
+
+        body.dark-mode #itemSearchInput {
+            background: var(--bg-dark) !important;
+            color: var(--text-dark) !important;
+            border-color: var(--border-dark) !important;
+        }
+
+        /* Main container dark mode */
+        body.dark-mode .item-forecast-container {
+            background: var(--card-dark) !important;
+            border-color: var(--border-dark) !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Dark Mode Toggle -->
+    <div class="dark-mode-toggle" id="darkModeToggle">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-utensils"></i>
+                <span>Food Forecast AI</span>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ url_for('dashboard') }}" class="nav-link active">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('data_management') }}" class="nav-link">
+                        <i class="fas fa-database"></i>
+                        <span>Data Management</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('menu_items') }}" class="nav-link">
+                        <i class="fas fa-utensils"></i>
+                        <span>Menu Items</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('customer_analytics') }}" class="nav-link">
+                        <i class="fas fa-users"></i>
+                        <span>Customer Analytics</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('ml_models') }}" class="nav-link">
+                        <i class="fas fa-robot"></i>
+                        <span>Forecasting</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('inventory') }}" class="nav-link">
+                        <i class="fas fa-box"></i>
+                        <span>Inventory</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('waste_management') }}" class="nav-link">
+                        <i class="fas fa-recycle"></i>
+                        <span>Waste Management</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('reports') }}" class="nav-link">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Reports</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('settings') }}" class="nav-link">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item" style="margin-top: 20px; border-top: 1px solid var(--border-light); padding-top: 12px;">
+                    <a href="{{ url_for('logout') }}" class="nav-link" style="color: #ef4444;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="user-profile">
+                <div class="user-avatar">{{ user.initials if user else 'RM' }}</div>
+                <div class="user-info">
+                    <h4>{{ user.first_name if user else 'Restaurant' }} {{ user.last_name if user else 'Manager' }}</h4>
+                    <p>{{ user.plan|capitalize if user else 'Premium' }} Account</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                <div class="flash-message {{ category }}">
+                    {% if category == 'success' %}
+                    <i class="fas fa-check-circle"></i>
+                    {% elif category == 'error' %}
+                    <i class="fas fa-exclamation-circle"></i>
+                    {% else %}
+                    <i class="fas fa-info-circle"></i>
+                    {% endif %}
+                    <span>{{ message }}</span>
+                    <span class="close-flash" onclick="this.parentElement.style.display='none'">
+                        <i class="fas fa-times"></i>
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <div class="header">
+                <h1>Food Forecast Dashboard</h1>
+                <div class="header-actions">
+                    <div class="restaurant-selector">
+                        <select class="restaurant-dropdown" id="restaurantSelect">
+                            <option value="{{ user.restaurant_name if user else 'Main Restaurant' }}" selected>
+                                {{ user.restaurant_name if user else 'Main Restaurant' }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="date-range">
+                        <button class="date-btn active" data-period="today">Today</button>
+                        <button class="date-btn" data-period="week">This Week</button>
+                        <button class="date-btn" data-period="month">This Month</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon customers">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <span class="stat-trend {{ 'trend-up' if stats.customers_trend > 0 else 'trend-down' }}">
+                            {{ '+' if stats.customers_trend > 0 else '' }}{{ stats.customers_trend }}%
+                        </span>
+                    </div>
+                    <div class="stat-value">{{ stats.today_customers }}</div>
+                    <div class="stat-label">Today's Customers</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon accuracy">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <span class="stat-trend {{ 'trend-up' if stats.accuracy_trend > 0 else 'trend-down' }}">
+                            {{ '+' if stats.accuracy_trend > 0 else '' }}{{ stats.accuracy_trend }}%
+                        </span>
+                    </div>
+                    <div class="stat-value">{{ stats.forecast_accuracy }}%</div>
+                    <div class="stat-label">Forecast Accuracy</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon waste">
+                            <i class="fas fa-trash-alt"></i>
+                        </div>
+                        <span class="stat-trend {{ 'trend-down' if stats.waste_trend < 0 else 'trend-up' }}">
+                            {{ '+' if stats.waste_trend > 0 else '' }}{{ stats.waste_trend }}%
+                        </span>
+                    </div>
+                    <div class="stat-value">{{ stats.daily_waste }}kg</div>
+                    <div class="stat-label">Daily Waste</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon revenue">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <span class="stat-trend {{ 'trend-up' if stats.revenue_trend > 0 else 'trend-down' }}">
+                            {{ '+' if stats.revenue_trend > 0 else '' }}{{ stats.revenue_trend }}%
+                        </span>
+                    </div>
+                    <div class="stat-value">${{ stats.today_revenue }}</div>
+                    <div class="stat-label">Today's Revenue</div>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- ITEM FORECAST SECTION - ADD THIS -->
+            <!-- ============================================ -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-search-dollar"></i> Item Demand Forecast</h2>
+                    <div style="display: flex; gap: 12px;">
+                        <button class="export-btn" onclick="loadForecastItems()" style="border-color: var(--primary); color: var(--primary);">
+                            <i class="fas fa-sync-alt"></i> Refresh Items
+                        </button>
+                    </div>
+                </div>
+
+                <div class="item-forecast-container" style="display: grid; grid-template-columns: 280px 1fr; gap: 24px; background: var(--card-light); border-radius: 16px; border: 1px solid var(--border-light); padding: 20px; min-height: 300px; transition: all 0.3s ease;">
+
+                    <!-- LEFT: Item List -->
+                    <div style="border-right: 1px solid var(--border-light); padding-right: 20px; transition: all 0.3s ease;">
+                        <div style="position: relative; margin-bottom: 12px;">
+                            <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+                            <input type="text" id="itemSearchInput" placeholder="Search items..."
+                                   style="width: 100%; padding: 10px 10px 10px 36px; border: 2px solid var(--border-light); border-radius: 10px; font-size: 14px; background: var(--bg-light); color: var(--text-light);">
+                        </div>
+                        <div id="itemList" style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;">
+                            <div style="text-align: center; padding: 20px; color: #64748b;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading items...
+                            </div>
+                        </div>
+                        <div style="margin-top: 12px; font-size: 12px; color: #94a3b8; text-align: center;" id="itemCount">0 items</div>
+                    </div>
+
+                    <!-- RIGHT: Forecast -->
+                    <div id="forecastDisplay" style="display: flex; flex-direction: column; gap: 12px; min-height: 280px; justify-content: center; align-items: center; color: #94a3b8;">
+                        <i class="fas fa-hand-pointer" style="font-size: 32px;"></i>
+                        <p style="font-size: 14px;">Select a menu item from the left to see its demand forecast</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two Column Layout -->
+            <div class="two-column">
+                <!-- Today's Alerts -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2>Today's Alerts</h2>
+                        <a href="{{ url_for('alerts') }}" class="view-all">View All Alerts</a>
+                    </div>
+                    <div class="alerts-list">
+                        {% if alerts %}
+                        {% for alert in alerts %}
+                        <div class="alert-item" onclick="handleAlertClick('{{ alert.id }}', '{{ alert.type }}')">
+                            <div class="alert-icon {{ alert.icon_class }}">
+                                <i class="fas fa-{{ alert.icon }}"></i>
+                            </div>
+                            <div class="alert-content">
+                                <div class="alert-title">{{ alert.title }}</div>
+                                <div class="alert-details">{{ alert.details }}</div>
+                            </div>
+                            <div class="alert-status status-{{ alert.status_class }}">{{ alert.status_text }}</div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="empty-state" style="padding: 30px;">
+                            <i class="fas fa-bell-slash"></i>
+                            <p>No alerts at this time</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Age Group Distribution -->
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2>Customer Age Distribution</h2>
+                    </div>
+                    <div class="age-distribution">
+                        <div class="age-bars">
+                            {% if age_distribution %}
+                            {% for age_group in age_distribution %}
+                            <div class="age-bar">
+                                <div class="age-label">{{ age_group.range }}</div>
+                                <div class="age-progress">
+                                    <div class="age-fill" style="width: {{ age_group.percentage }}%; background: {{ age_group.color }};">
+                                        {{ age_group.percentage }}%
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-chart-bar"></i>
+                                <p>No demographic data available</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Forecast Visualization -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2>7-Day Demand Forecast</h2>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button class="export-btn" onclick="exportChartAsImage()" style="border-color: var(--primary); color: var(--primary);">
+                            <i class="fas fa-image"></i> PNG
+                        </button>
+                        <button class="export-btn" onclick="downloadReport('pdf')" style="border-color: #dc2626; color: #dc2626;">
+                            <i class="fas fa-file-pdf"></i> PDF Report
+                        </button>
+                        <button class="export-btn" onclick="downloadReport('excel')" style="border-color: #16a34a; color: #16a34a;">
+                            <i class="fas fa-file-excel"></i> Excel Report
+                        </button>
+                        <a href="{{ url_for('ml_models') }}" class="view-all">
+                            Generate New Forecast
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="forecast-chart">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            <h3>Customer Count Forecast vs Actual</h3>
+                            <div style="font-size: 14px; color: #64748b; margin-top: 4px;">
+                                <span style="color: #10b981;">● Actual Sales</span>
+                                <span style="color: #4f46e5; margin-left: 16px;">● AI Forecast</span>
+                            </div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 8px; display: flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-mouse-pointer" style="font-size: 12px;"></i>
+                                <span>Hover over any bar to see detailed numbers</span>
+                            </div>
+                        </div>
+                        <div class="chart-legend" id="chartLegend">
+                            <div class="legend-item" data-dataset="actual" data-index="0">
+                                <div class="legend-color actual"></div>
+                                <span class="legend-text">Actual Sales</span>
+                            </div>
+                            <div class="legend-item" data-dataset="predicted" data-index="1">
+                                <div class="legend-color predicted"></div>
+                                <span class="legend-text">AI Forecast</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-canvas-container">
+                        <canvas id="forecastCanvas"></canvas>
+                    </div>
+
+                    <!-- Forecast Summary Cards -->
+                    <div class="forecast-summary" id="forecastSummary">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2>Quick Actions</h2>
+                </div>
+                <div class="quick-actions">
+                    <a href="{{ url_for('ml_models') }}" class="action-btn">
+                        <div class="action-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div class="action-title">Generate Forecast</div>
+                        <div class="action-desc">Create demand predictions</div>
+                    </a>
+                    <a href="{{ url_for('reports') }}" class="action-btn">
+                        <div class="action-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div class="action-title">View Analytics</div>
+                        <div class="action-desc">Detailed performance insights</div>
+                    </a>
+                    <a href="{{ url_for('inventory') }}" class="action-btn">
+                        <div class="action-icon">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <div class="action-title">Inventory Order</div>
+                        <div class="action-desc">Place purchase orders</div>
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ============================================
+        // BACKEND DATA INJECTION
+        // ============================================
+
+        const forecastData = {{ forecast_data | tojson | safe if forecast_data else '[]' }};
+        const currentUser = {{ user | tojson | safe if user else 'null' }};
+        let forecastChart = null;
+
+        console.log('Forecast data:', forecastData);
+
+        // ============================================
+        // DARK MODE TOGGLE
+        // ============================================
+
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const darkModeIcon = darkModeToggle.querySelector('i');
+
+        darkModeToggle.addEventListener('click', function () {
+            document.body.classList.toggle('dark-mode');
+
+            if (document.body.classList.contains('dark-mode')) {
+                darkModeIcon.classList.remove('fa-moon');
+                darkModeIcon.classList.add('fa-sun');
+            } else {
+                darkModeIcon.classList.remove('fa-sun');
+                darkModeIcon.classList.add('fa-moon');
+            }
+
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+
+            fetch('{{ url_for("set_theme") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() if csrf_token else "" }}'
+                },
+                body: JSON.stringify({ theme: isDarkMode ? 'dark' : 'light' })
+            }).catch(() => { });
+
+            // COMPLETELY RE-RENDER THE CHART
+            if (forecastChart) {
+                renderForecastChart();  // This destroys and recreates the chart
+            }
+        });
+
+        // ============================================
+        // DARK MODE - Update item chart when toggled
+        // ============================================
+
+        // Store original toggle handler to add our update
+        const originalToggle = darkModeToggle.click;
+        darkModeToggle.addEventListener('click', function () {
+            // Wait a tiny bit for the class to be applied
+            setTimeout(() => {
+                // If we have an item selected and a chart, re-render it
+                if (selectedItemId && itemChart) {
+                    // Re-select the item to refresh the chart with new colors
+                    selectItem(selectedItemId);
+                }
+            }, 50);
+        });
+
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            darkModeIcon.classList.remove('fa-moon');
+            darkModeIcon.classList.add('fa-sun');
+        }
+
+        // ============================================
+        // RENDER FORECAST CHART WITH CHART.JS
+        // ============================================
+
+        function getChartColors() {
+            const isDark = document.body.classList.contains('dark-mode');
+            return {
+                actual: '#10b981',
+                predicted: '#4f46e5',
+                grid: isDark ? '#334155' : '#e2e8f0',
+                text: isDark ? '#f1f5f9' : '#1e293b'
+            };
+        }
+
+        function updateChartColors() {
+            if (!forecastChart) return;
+            const colors = getChartColors();
+            forecastChart.data.datasets[0].backgroundColor = colors.actual;
+            forecastChart.data.datasets[1].backgroundColor = colors.predicted;
+            forecastChart.options.scales.x.grid.color = colors.grid;
+            forecastChart.options.scales.y.grid.color = colors.grid;
+            forecastChart.update();
+        }
+
+        function formatDateDisplay(dateStr) {
+            const date = new Date(dateStr);
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return `${dayNames[date.getDay()]}\n${monthNames[date.getMonth()]} ${date.getDate()}`;
+        }
+
+        function renderForecastChart() {
+            const canvas = document.getElementById('forecastCanvas');
+            if (!canvas) return;
+
+            if (!forecastData || forecastData.length === 0) {
+                document.querySelector('.chart-canvas-container').innerHTML = `
+                    <div class="empty-state" style="height: 300px; display: flex; align-items: center; justify-content: center;">
+                        <div>
+                            <i class="fas fa-chart-line"></i>
+                            <p>No forecast data available</p>
+                            <a href="{{ url_for('ml_models') }}" style="color: var(--primary);">Generate a forecast</a>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            const colors = getChartColors();
+
+            // Prepare data - fix the display format
+            const labels = forecastData.map(d => {
+                const date = new Date(d.forecast_date);
+                const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                return `${dayNames[date.getDay()]}\n${monthNames[date.getMonth()]} ${date.getDate()}`;
+            });
+
+            const actualData = forecastData.map(d => d.actual || null);
+            const predictedData = forecastData.map(d => d.predicted || null);
+
+            // Destroy existing chart if any
+            if (forecastChart) {
+                forecastChart.destroy();
+            }
+
+            // Create new chart
+            forecastChart = new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Actual Sales',
+                            data: actualData,
+                            backgroundColor: colors.actual,
+                            borderColor: colors.actual,
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8,
+                            order: 2
+                        },
+                        {
+                            label: 'AI Forecast',
+                            data: predictedData,
+                            backgroundColor: colors.predicted,
+                            borderColor: colors.predicted,
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8,
+                            order: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    let value = context.raw;
+                                    if (value) {
+                                        label += `: ${Math.round(value)} orders`;
+
+                                        // Add comparison for actual vs forecast
+                                        const index = context.dataIndex;
+                                        if (context.dataset.label === 'Actual Sales' && value && predictedData[index]) {
+                                            const diff = Math.abs(value - predictedData[index]);
+                                            const percent = (diff / predictedData[index] * 100).toFixed(1);
+                                            label += `\nDifference: ${diff} orders (${percent}%)`;
+                                        }
+                                    }
+                                    return label;
+                                }
+                            },
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            padding: 10,
+                            cornerRadius: 8
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: colors.grid,
+                                drawBorder: true
+                            },
+                            ticks: {
+                                color: colors.text,
+                                whiteSpace: 'pre-line',
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: colors.grid
+                            },
+                            ticks: {
+                                color: colors.text,
+                                callback: function(value) {
+                                    return value + ' orders';
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Number of Orders',
+                                color: colors.text
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update summary cards
+            updateForecastSummary();
+        }
+
+        function updateForecastSummary() {
+            const summaryContainer = document.getElementById('forecastSummary');
+            if (!summaryContainer) return;
+
+            if (!forecastData || forecastData.length === 0) {
+                summaryContainer.innerHTML = '';
+                return;
+            }
+
+            const predictedValues = forecastData.map(d => d.predicted).filter(v => v);
+            const actualValues = forecastData.map(d => d.actual).filter(v => v);
+
+            const avgPredicted = predictedValues.reduce((a, b) => a + b, 0) / predictedValues.length;
+            const maxPredicted = Math.max(...predictedValues);
+            const maxIndex = predictedValues.indexOf(maxPredicted);
+            const peakDay = forecastData[maxIndex]?.day || 'Unknown';
+
+            let accuracy = null;
+            if (actualValues.length > 0 && predictedValues.length > 0) {
+                const errors = actualValues.map((actual, i) => {
+                    const predicted = predictedValues[i];
+                    return Math.abs(actual - predicted) / actual;
+                });
+                accuracy = 100 - (errors.reduce((a, b) => a + b, 0) / errors.length * 100);
+            }
+
+            const totalForecast = predictedValues.reduce((a, b) => a + b, 0);
+
+            summaryContainer.innerHTML = `
+                <div class="summary-card">
+                    <div class="summary-value">${Math.round(avgPredicted)}</div>
+                    <div class="summary-label">Avg Daily Forecast</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value">${Math.round(maxPredicted)}</div>
+                    <div class="summary-label">Peak Day (${peakDay})</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value">${accuracy ? accuracy.toFixed(1) : '--'}%</div>
+                    <div class="summary-label">Forecast Accuracy</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value">${Math.round(totalForecast)}</div>
+                    <div class="summary-label">Total 7-Day Forecast</div>
+                </div>
+            `;
+        }
+
+        function exportChartAsImage() {
+            const canvas = document.getElementById('forecastCanvas');
+            if (!canvas) return;
+
+            const link = document.createElement('a');
+            link.download = 'forecast-chart.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // Legend click handlers - FIXED: Now correctly toggles the right dataset
+        function setupLegendHandlers() {
+            const legendItems = document.querySelectorAll('.legend-item');
+
+            legendItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const datasetIndex = parseInt(this.dataset.index);
+                    if (isNaN(datasetIndex)) return;
+
+                    if (!forecastChart) return;
+
+                    const meta = forecastChart.getDatasetMeta(datasetIndex);
+                    meta.hidden = !meta.hidden;
+
+                    // Update visual state of legend item
+                    if (meta.hidden) {
+                        this.classList.add('hidden');
+                    } else {
+                        this.classList.remove('hidden');
+                    }
+
+                    forecastChart.update();
+                });
+            });
+        }
+
+        // ============================================
+        // REPORT DOWNLOADS (Feature b)
+        // ============================================
+
+        function downloadReport(format) {
+            // Get the current chart data from the page
+            const currentData = forecastData;  // This is from the backend
+
+            if (!currentData || currentData.length === 0) {
+                alert('No forecast data available. Please generate a forecast first.');
+                return;
+            }
+
+            // Show loading state
+            showLoading();
+
+            // Send the current data with the request
+            fetch(`/api/report/download?format=${format}`, {
+                method: 'POST',  // Use POST to send data
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() if csrf_token else "" }}'
+                },
+                body: JSON.stringify({
+                    forecast_data: currentData
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            let errorMsg = 'Download failed';
+                            try {
+                                const data = JSON.parse(text);
+                                errorMsg = data.message || errorMsg;
+                            } catch (e) {
+                                errorMsg = text || errorMsg;
+                            }
+                            throw new Error(errorMsg);
+                        });
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    // Create download link
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    const ext = format === 'pdf' ? 'pdf' : 'xlsx';
+                    a.download = `forecast_report_${new Date().toISOString().slice(0, 10)}.${ext}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+
+                    hideLoading();
+                })
+                .catch(error => {
+                    console.error('Download error:', error);
+                    alert('Error downloading report: ' + error.message);
+                    hideLoading();
+                });
+        }
+
+        // ============================================
+        // DATE RANGE SELECTION
+        // ============================================
+
+        document.querySelectorAll('.date-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const period = this.getAttribute('data-period');
+
+                showLoading();
+
+                fetch(`{{ url_for("dashboard_data") }}?period=${period}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        updateDashboardData(data);
+                        hideLoading();
+                    })
+                    .catch(error => {
+                        console.error('Error fetching data:', error);
+                        hideLoading();
+                    });
+            });
+        });
+
+        // ============================================
+        // RESTAURANT SELECTOR
+        // ============================================
+
+        document.getElementById('restaurantSelect').addEventListener('change', function () {
+            const restaurant = this.value;
+
+            fetch(`{{ url_for("switch_restaurant") }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() if csrf_token else "" }}'
+                },
+                body: JSON.stringify({ restaurant: restaurant })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        // ============================================
+        // UPDATE DASHBOARD DATA
+        // ============================================
+
+        function updateDashboardData(data) {
+            if (data.stats) {
+                const statValues = document.querySelectorAll('.stat-value');
+                if (statValues[0]) statValues[0].textContent = data.stats.today_customers;
+                if (statValues[1]) statValues[1].textContent = data.stats.forecast_accuracy + '%';
+                if (statValues[2]) statValues[2].textContent = data.stats.daily_waste + 'kg';
+                if (statValues[3]) statValues[3].textContent = '$' + data.stats.today_revenue;
+            }
+        }
+
+        // ============================================
+        // ALERT HANDLING
+        // ============================================
+
+        function handleAlertClick(alertId, alertType) {
+            fetch(`{{ url_for("resolve_alert") }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() if csrf_token else "" }}'
+                },
+                body: JSON.stringify({ alert_id: alertId, action: 'view' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // ============================================
+        // LOADING STATE
+        // ============================================
+
+        function showLoading() {
+            const overlay = document.createElement('div');
+            overlay.id = 'loadingOverlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+            `;
+            overlay.innerHTML = '<div style="background: var(--card-light); padding: 20px; border-radius: 16px;"><i class="fas fa-spinner fa-spin" style="font-size: 32px; color: var(--primary);"></i><p style="margin-top: 12px;">Loading...</p></div>';
+            document.body.appendChild(overlay);
+        }
+
+        function hideLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) overlay.remove();
+        }
+
+        // ============================================
+        // INITIALIZE
+        // ============================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderForecastChart();
+            setupLegendHandlers();
+
+            setTimeout(() => {
+                document.querySelectorAll('.flash-message').forEach(msg => {
+                    msg.style.transition = 'opacity 0.5s';
+                    msg.style.opacity = '0';
+                    setTimeout(() => msg.remove(), 500);
+                });
+            }, 5000);
+        });
+
+        // ============================================
+        // SESSION MANAGEMENT - 50 Minutes Inactivity
+        // ============================================
+
+        let inactivityTimer;
+        let isActive = true;
+        let lastKeepAlive = 0;
+        const SESSION_TIMEOUT = 50 * 60 * 1000; // 50 minutes
+        const KEEP_ALIVE_INTERVAL = 30000; // Only send keep-alive every 30 seconds max
+
+        // Function to reset inactivity timer
+        function resetInactivityTimer() {
+            if (inactivityTimer) {
+                clearTimeout(inactivityTimer);
+            }
+            inactivityTimer = setTimeout(logoutDueToInactivity, SESSION_TIMEOUT);
+        }
+
+        // Function to handle session timeout
+        function logoutDueToInactivity() {
+            if (!isActive) return;
+
+            fetch('/session-timeout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken || '{{ csrf_token() if csrf_token else "" }}'
+                }
+            })
+                .then(() => {
+                    isActive = false;
+                    alert('Your session has expired due to 50 minutes of inactivity. Please login again.');
+                    window.location.href = '{{ url_for("login") }}';
+                })
+                .catch(() => {
+                    window.location.href = '{{ url_for("login") }}';
+                });
+        }
+
+        // Function to keep session alive (throttled to prevent spam)
+        function keepAlive() {
+            const now = Date.now();
+            // Only send keep-alive if it's been more than 30 seconds since last one
+            if (now - lastKeepAlive > KEEP_ALIVE_INTERVAL) {
+                lastKeepAlive = now;
+                fetch('/keep-alive', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken || '{{ csrf_token() if csrf_token else "" }}'
+                    }
+                }).catch(() => { });
+            }
+        }
+
+        // Track user activity to reset timer
+        function handleUserActivity() {
+            resetInactivityTimer();
+            keepAlive();
+        }
+
+        // Set up activity listeners - use a flag to prevent multiple initializations
+        let listenersInitialized = false;
+
+        function initSessionManagement() {
+            if (listenersInitialized) return;
+            listenersInitialized = true;
+
+            // Reset timer on page load
+            resetInactivityTimer();
+
+            // Track user activities
+            document.addEventListener('mousemove', handleUserActivity);
+            document.addEventListener('keypress', handleUserActivity);
+            document.addEventListener('click', handleUserActivity);
+            document.addEventListener('scroll', handleUserActivity);
+            document.addEventListener('touchstart', handleUserActivity);
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initSessionManagement);
+        } else {
+            initSessionManagement();
+        }
+
+        // Handle tab/window close
+        window.addEventListener('beforeunload', function () {
+            if (isActive) {
+                navigator.sendBeacon('/session-timeout', JSON.stringify({
+                    csrf_token: csrfToken || '{{ csrf_token() if csrf_token else "" }}'
+                }));
+            }
+        });
+
+        // Handle page visibility change
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) {
+                resetInactivityTimer();
+                keepAlive();
+            }
+        });
+
+        // ============================================
+        // ITEM FORECAST - Dashboard Integration
+        // ============================================
+
+        let forecastItems = [];
+        let selectedItemId = null;
+        let itemChart = null;
+
+        function loadForecastItems() {
+            const list = document.getElementById('itemList');
+            list.innerHTML = '<div style="text-align: center; padding: 20px; color: #64748b;"><i class="fas fa-spinner fa-spin"></i> Loading items...</div>';
+
+            fetch('/api/items')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        forecastItems = data.items;
+                        renderItemList(forecastItems);
+                        document.getElementById('itemCount').textContent = `${forecastItems.length} items`;
+                    } else {
+                        list.innerHTML = `<div style="text-align: center; padding: 20px; color: #ef4444;">${data.message || 'Error loading items'}</div>`;
+                    }
+                })
+                .catch(error => {
+                    list.innerHTML = `<div style="text-align: center; padding: 20px; color: #ef4444;">Error loading items</div>`;
+                });
+        }
+
+        function renderItemList(items) {
+            const container = document.getElementById('itemList');
+
+            if (items.length === 0) {
+                container.innerHTML = `<div style="text-align: center; padding: 20px; color: #94a3b8;">No items found</div>`;
+                return;
+            }
+
+            container.innerHTML = items.map(item => `
+        <div class="item-option" data-id="${item.id}" onclick="selectItem(${item.id})" style="display: flex; justify-content: space-between; padding: 10px 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; background: var(--bg-light);">
+            <div>
+                <div style="font-weight: 500; font-size: 14px;">${item.name}</div>
+                <div style="display: flex; gap: 6px; margin-top: 2px;">
+                    <span style="font-size: 10px; background: rgba(79,70,229,0.1); padding: 1px 8px; border-radius: 10px; color: var(--primary);">${item.category}</span>
+                    <span style="font-size: 10px; color: #94a3b8;">#${item.id}</span>
+                </div>
+            </div>
+            <div style="font-size: 11px; color: #94a3b8;">${item.cuisine}</div>
+        </div>
+    `).join('');
+        }
+
+        // Search filter
+        document.getElementById('itemSearchInput').addEventListener('input', function () {
+            const search = this.value.toLowerCase();
+            const filtered = forecastItems.filter(item =>
+                item.name.toLowerCase().includes(search) ||
+                item.category.toLowerCase().includes(search) ||
+                String(item.id).includes(search)
+            );
+            renderItemList(filtered);
+        });
+
+        function selectItem(itemId) {
+            selectedItemId = itemId;
+
+            // Highlight selected
+            document.querySelectorAll('.item-option').forEach(el => {
+                el.style.borderColor = parseInt(el.dataset.id) === itemId ? 'var(--primary)' : 'transparent';
+                el.style.background = parseInt(el.dataset.id) === itemId ? 'rgba(79,70,229,0.1)' : 'var(--bg-light)';
+            });
+
+            const display = document.getElementById('forecastDisplay');
+            display.innerHTML = `<div style="text-align: center; padding: 20px; color: #64748b;"><i class="fas fa-spinner fa-spin"></i> Generating forecast...</div>`;
+
+            fetch(`/api/forecast/item/${itemId}?days=7`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        renderForecast(data);
+                    } else {
+                        display.innerHTML = `<div style="text-align: center; padding: 20px; color: #ef4444;">${data.message || 'Error generating forecast'}</div>`;
+                    }
+                })
+                .catch(error => {
+                    display.innerHTML = `<div style="text-align: center; padding: 20px; color: #ef4444;">Error generating forecast</div>`;
+                });
+        }
+
+        function renderForecast(data) {
+            const item = data.item;
+            const forecast = data.forecast;
+            const summary = forecast.summary;
+            const forecasts = forecast.forecasts || [];
+
+            const display = document.getElementById('forecastDisplay');
+
+            // Check if dark mode is active
+            const isDark = document.body.classList.contains('dark-mode');
+            const bgColor = isDark ? 'var(--bg-dark)' : 'var(--bg-light)';
+            const textColor = isDark ? 'var(--text-dark)' : 'var(--text-light)';
+            const borderColor = isDark ? 'var(--border-dark)' : 'var(--border-light)';
+            const cardBg = isDark ? 'var(--card-dark)' : 'var(--card-light)';
+
+            let html = `
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; width: 100%;">
+        <div>
+            <div style="font-size: 20px; font-weight: 700; color: var(--text-light);">${item.name}</div>
+            <div style="display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
+                <span style="padding: 2px 12px; border-radius: 12px; font-size: 11px; font-weight: 500; background: rgba(79,70,229,0.1); color: var(--primary);">${item.category}</span>
+                <span style="padding: 2px 12px; border-radius: 12px; font-size: 11px; font-weight: 500; background: rgba(16,185,129,0.1); color: var(--success);">${item.cuisine}</span>
+                <span style="font-size: 11px; color: #94a3b8;">ID: ${item.id}</span>
+            </div>
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button onclick="downloadForecast(${item.id}, 'pdf')" style="padding: 6px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; background: #dc2626; color: white; transition: all 0.2s;">
+                <i class="fas fa-file-pdf"></i> PDF
+            </button>
+            <button onclick="downloadForecast(${item.id}, 'excel')" style="padding: 6px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; background: #16a34a; color: white; transition: all 0.2s;">
+                <i class="fas fa-file-excel"></i> Excel
+            </button>
+            <button onclick="downloadForecast(${item.id}, 'png')" style="padding: 6px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; background: #2563eb; color: white; transition: all 0.2s;">
+                <i class="fas fa-image"></i> PNG
+            </button>
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%;">
+        <div style="background: var(--bg-light); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-light);">
+            <div style="font-size: 20px; font-weight: 700; color: var(--primary);">${summary.total_demand || 0}</div>
+            <div style="font-size: 11px; color: #94a3b8;">Total Demand</div>
+        </div>
+        <div style="background: var(--bg-light); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-light);">
+            <div style="font-size: 20px; font-weight: 700; color: var(--primary);">${summary.avg_daily_demand || 0}</div>
+            <div style="font-size: 11px; color: #94a3b8;">Avg Daily</div>
+        </div>
+        <div style="background: var(--bg-light); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-light);">
+            <div style="font-size: 20px; font-weight: 700; color: var(--primary);">${summary.peak_day || '--'}</div>
+            <div style="font-size: 11px; color: #94a3b8;">Peak Day</div>
+        </div>
+        <div style="background: var(--bg-light); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-light);">
+            <div style="font-size: 20px; font-weight: 700; color: var(--primary);">${summary.weekend_avg || 0}</div>
+            <div style="font-size: 11px; color: #94a3b8;">Weekend Avg</div>
+        </div>
+    </div>
+    
+    <div style="width: 100%; height: 180px; position: relative;">
+        <canvas id="itemForecastChart"></canvas>
+    </div>
+    
+    <div style="max-height: 130px; overflow-y: auto; width: 100%;">
+        <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="text-align: left; padding: 4px 8px; font-weight: 600; border-bottom: 2px solid var(--border-light); color: var(--text-light);">Date</th>
+                    <th style="text-align: left; padding: 4px 8px; font-weight: 600; border-bottom: 2px solid var(--border-light); color: var(--text-light);">Day</th>
+                    <th style="text-align: right; padding: 4px 8px; font-weight: 600; border-bottom: 2px solid var(--border-light); color: var(--text-light);">Demand</th>
+                    <th style="text-align: right; padding: 4px 8px; font-weight: 600; border-bottom: 2px solid var(--border-light); color: var(--text-light);">Range</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+            forecasts.forEach(f => {
+                const rowBg = f.is_weekend ? (isDark ? 'rgba(99,102,241,0.08)' : 'rgba(79,70,229,0.03)') : '';
+                html += `
+            <tr style="border-bottom: 1px solid var(--border-light); ${rowBg ? 'background: ' + rowBg + ';' : ''}">
+                <td style="padding: 4px 8px; color: var(--text-light);">${f.date}</td>
+                <td style="padding: 4px 8px; color: var(--text-light);">${f.day}</td>
+                <td style="padding: 4px 8px; text-align: right; font-weight: 600; color: var(--primary);">${f.predicted_demand}</td>
+                <td style="padding: 4px 8px; text-align: right; color: #94a3b8;">${f.confidence_lower} - ${f.confidence_upper}</td>
+            </tr>
+        `;
+            });
+
+            html += `
+            </tbody>
+        </table>
+    </div>
+    `;
+
+            display.innerHTML = html;
+
+            // Render chart
+            renderItemChart(forecasts);
+        }
+
+        function renderItemChart(forecasts) {
+            const canvas = document.getElementById('itemForecastChart');
+            if (!canvas) return;
+
+            if (itemChart) {
+                itemChart.destroy();
+            }
+
+            const isDark = document.body.classList.contains('dark-mode');
+            const textColor = isDark ? '#f1f5f9' : '#1e293b';
+            const gridColor = isDark ? '#334155' : '#e2e8f0';
+            const barColor = isDark ? 'rgba(99, 102, 241, 0.8)' : 'rgba(79, 70, 229, 0.8)';
+            const borderColor = isDark ? '#818cf8' : '#4f46e5';
+
+            const dates = forecasts.map(f => f.date);
+            const demands = forecasts.map(f => f.predicted_demand);
+
+            itemChart = new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Predicted Demand',
+                        data: demands,
+                        backgroundColor: barColor,
+                        borderColor: borderColor,
+                        borderWidth: 2,
+                        borderRadius: 4,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor,
+                                font: { size: 10 }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, font: { size: 10 } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function downloadForecast(itemId, format) {
+            // Show loading state
+            const display = document.getElementById('forecastDisplay');
+            const loadingHtml = `
+        <div style="text-align: center; padding: 20px; color: #64748b;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 24px;"></i>
+            <p style="margin-top: 10px;">Generating ${format.toUpperCase()} file...</p>
+        </div>
+    `;
+            display.innerHTML = loadingHtml;
+
+            // Make the request
+            fetch(`/api/forecast/download/${itemId}?format=${format}`)
+                .then(response => {
+                    if (!response.ok) {
+                        // Try to get error message from response
+                        return response.text().then(text => {
+                            let errorMsg = 'Download failed';
+                            try {
+                                const data = JSON.parse(text);
+                                errorMsg = data.message || errorMsg;
+                            } catch (e) {
+                                errorMsg = text || errorMsg;
+                            }
+                            throw new Error(errorMsg);
+                        });
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    // Create download link
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `forecast_item_${itemId}.${format === 'pdf' ? 'pdf' : format === 'excel' ? 'xlsx' : 'png'}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+
+                    // Restore the forecast display
+                    selectItem(itemId);
+                })
+                .catch(error => {
+                    console.error('Download error:', error);
+                    alert('Error downloading file: ' + error.message);
+                    // Restore the forecast display
+                    selectItem(itemId);
+                });
+        }
+
+        // ============================================
+        // RESTORE ITEM FORECAST FROM SESSION
+        // ============================================
+
+        function restoreItemForecast() {
+            // Check if we have a stored forecast in session
+            fetch('/api/forecast/restore')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success' && data.item && data.forecast) {
+                        // We have a stored forecast, render it
+                        const display = document.getElementById('forecastDisplay');
+
+                        // Show the forecast
+                        renderForecastFromData(data.item, data.forecast);
+
+                        // Highlight the item in the list
+                        document.querySelectorAll('.item-option').forEach(el => {
+                            if (parseInt(el.dataset.id) === data.item.id) {
+                                el.style.borderColor = 'var(--primary)';
+                                el.style.background = 'rgba(79,70,229,0.1)';
+                            }
+                        });
+
+                        selectedItemId = data.item.id;
+                        console.log('Restored item forecast for:', data.item.name);
+                    }
+                })
+                .catch(error => {
+                    console.log('No stored forecast to restore');
+                });
+        }
+
+        // New function to render forecast from stored data
+        function renderForecastFromData(item, forecast) {
+            const summary = forecast.summary;
+            const forecasts = forecast.forecasts || [];
+
+            const display = document.getElementById('forecastDisplay');
+            const isDark = document.body.classList.contains('dark-mode');
+
+            let html = `
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; width: 100%;">
+        <div>
+            <div style="font-size: 20px; font-weight: 700; color: var(--text-light);">${item.name}</div>
+            <div style="display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
+                <span style="padding: 2px 12px; border-radius: 12px; font-size: 11px; font-weight: 500; background: rgba(79,70,229,0.1); color: var(--primary);">${item.category}</span>
+                <span style="padding: 2px 12px; border-radius: 12px; font-size: 11px; font-weight: 500; background: rgba(16,185,129,0.1); color: var(--success);">${item.cuisine}</span>
+                <span style="font-size: 11px; color: #94a3b8;">ID: ${item.id}</span>
+            </div>
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button onclick="downloadForecast(${item.id}, 'pdf')" style="padding: 6px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; background: #dc2626; color: white; transition: all 0.2s;">
+                <i class="fas fa-file-pdf"></i> PDF
+            </button>
+            <button onclick="downloadForecast(${item.id}, 'excel')" style="padding: 6px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; background: #16a34a; color: white; transition: all 0.2s;">
+                <i class="fas fa-file-excel"></i> Excel
+            </button>
+            <button onclick="downloadForecast(${item.id}, 'png')" style="padding: 6px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; background: #2563eb; color: white; transition: all 0.2s;">
+                <i class="fas fa-image"></i> PNG
+            </button>
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%;">
+        <div style="background: var(--bg-light); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-light);">
+            <div style="font-size: 20px; font-weight: 700; color: var(--primary);">${summary.total_demand || 0}</div>
+            <div style="font-size: 11px; color: #94a3b8;">Total Demand</div>
+        </div>
+        <div style="background: var(--bg-light); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-light);">
+            <div style="font-size: 20px; font-weight: 700; color: var(--primary);">${summary.avg_daily_demand || 0}</div>
+            <div style="font-size: 11px; color: #94a3b8;">Avg Daily</div>
+        </div>
+        <div style="background: var(--bg-light); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-light);">
+            <div style="font-size: 20px; font-weight: 700; color: var(--primary);">${summary.peak_day || '--'}</div>
+            <div style="font-size: 11px; color: #94a3b8;">Peak Day</div>
+        </div>
+        <div style="background: var(--bg-light); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--border-light);">
+            <div style="font-size: 20px; font-weight: 700; color: var(--primary);">${summary.weekend_avg || 0}</div>
+            <div style="font-size: 11px; color: #94a3b8;">Weekend Avg</div>
+        </div>
+    </div>
+    
+    <div style="width: 100%; height: 180px; position: relative;">
+        <canvas id="itemForecastChart"></canvas>
+    </div>
+    
+    <div style="max-height: 130px; overflow-y: auto; width: 100%;">
+        <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="text-align: left; padding: 4px 8px; font-weight: 600; border-bottom: 2px solid var(--border-light); color: var(--text-light);">Date</th>
+                    <th style="text-align: left; padding: 4px 8px; font-weight: 600; border-bottom: 2px solid var(--border-light); color: var(--text-light);">Day</th>
+                    <th style="text-align: right; padding: 4px 8px; font-weight: 600; border-bottom: 2px solid var(--border-light); color: var(--text-light);">Demand</th>
+                    <th style="text-align: right; padding: 4px 8px; font-weight: 600; border-bottom: 2px solid var(--border-light); color: var(--text-light);">Range</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+            forecasts.forEach(f => {
+                const rowBg = f.is_weekend ? (isDark ? 'rgba(99,102,241,0.08)' : 'rgba(79,70,229,0.03)') : '';
+                html += `
+            <tr style="border-bottom: 1px solid var(--border-light); ${rowBg ? 'background: ' + rowBg + ';' : ''}">
+                <td style="padding: 4px 8px; color: var(--text-light);">${f.date}</td>
+                <td style="padding: 4px 8px; color: var(--text-light);">${f.day}</td>
+                <td style="padding: 4px 8px; text-align: right; font-weight: 600; color: var(--primary);">${f.predicted_demand}</td>
+                <td style="padding: 4px 8px; text-align: right; color: #94a3b8;">${f.confidence_lower} - ${f.confidence_upper}</td>
+            </tr>
+        `;
+            });
+
+            html += `
+            </tbody>
+        </table>
+    </div>
+    `;
+
+            display.innerHTML = html;
+            renderItemChart(forecasts);
+        }
+
+        // Load items when page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            renderForecastChart();
+            setupLegendHandlers();
+
+            // Load items for the forecast section
+            loadForecastItems();
+
+            // Restore the last selected item forecast
+            restoreItemForecast();
+
+            setTimeout(() => {
+                document.querySelectorAll('.flash-message').forEach(msg => {
+                    msg.style.transition = 'opacity 0.5s';
+                    msg.style.opacity = '0';
+                    setTimeout(() => msg.remove(), 500);
+                });
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
