@@ -1,0 +1,41 @@
+# ============================================
+# FOOD FORECAST AI - PYTHON DEPENDENCIES
+# ============================================
+# Install with: pip install -r requirements.txt
+# Updated: April 14, 2026
+# ============================================
+
+# Core Framework
+Flask==3.0.3
+Werkzeug==3.0.3
+
+# CSRF Protection
+Flask-WTF==1.2.1
+WTForms==3.1.2
+
+# File Handling & Data Processing
+pandas==2.2.2
+openpyxl==3.1.2
+numpy==1.26.4
+
+# Visualization (for PNG exports)
+matplotlib==3.8.4
+
+# PDF Generation (for PDF exports)
+reportlab==4.2.2
+
+# Machine Learning Models (All compatible with each other)
+scikit-learn==1.6.1          
+statsmodels==0.14.6          
+xgboost==3.2.0             
+tensorflow==2.19.0           
+
+# Utilities
+python-dotenv==1.0.1
+requests==2.32.3
+python-dateutil==2.9.0.post0
+
+# TensorFlow Dependencies (compatible with 2.14.0)
+protobuf==3.20.3             # Required for TensorFlow compatibility
+h5py==3.12.1                 # For saving/loading Keras models
+keras==3.5.0
